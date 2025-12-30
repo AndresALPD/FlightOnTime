@@ -36,6 +36,11 @@ build/
 .DS_Store
 Thumbs.db
 
+# eclipse
+*.project
+*.settings
+*.classpath
+
 # Logs
 *.log
 logs/
