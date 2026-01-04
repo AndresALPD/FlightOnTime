@@ -1,4 +1,4 @@
-package com.flightontimeAM.dto;
+package com.flightontime.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

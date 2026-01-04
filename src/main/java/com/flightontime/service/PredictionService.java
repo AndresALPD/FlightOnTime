@@ -1,7 +1,7 @@
-package com.flightontimeAM.service;
+package com.flightontime.service;
 
-import com.flightontimeAM.dto.FlightRequest;
-import com.flightontimeAM.dto.PredictionResponse;
+import com.flightontime.dto.FlightRequest;
+import com.flightontime.dto.PredictionResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpEntity;

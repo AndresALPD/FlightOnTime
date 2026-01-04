@@ -1,6 +1,6 @@
-package com.flightontimeAM.exception;
+package com.flightontime.exception;
 
-import com.flightontimeAM.dto.ErrorResponse;
+import com.flightontime.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;

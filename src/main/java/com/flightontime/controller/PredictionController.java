@@ -1,8 +1,8 @@
-package com.flightontimeAM.controller;
+package com.flightontime.controller;
 
-import com.flightontimeAM.dto.FlightRequest;
-import com.flightontimeAM.dto.PredictionResponse;
-import com.flightontimeAM.service.PredictionService;
+import com.flightontime.dto.FlightRequest;
+import com.flightontime.dto.PredictionResponse;
+import com.flightontime.service.PredictionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
