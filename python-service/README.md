@@ -69,13 +69,13 @@ app/
   👉 Descárgalo desde el sitio oficial: https://www.python.org/downloads/
 - `pip` actualizado
 
-Para actualizar `pip`, ejecuta el siguiente comando:
+Para actualizar `pip`, ejecuta el siguiente comando dentro de la carpeta `python-service`:
 
 ```
 py -m pip install --upgrade pip
 ```
 
-Desde la carpeta `python-service`, ejecuta los siguientes comandos:
+De igual manera, desde la carpeta `python-service`, ejecuta los siguientes comandos:
 
 ### 1️⃣ Crear el entorno virtual
 ```
