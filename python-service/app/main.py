@@ -109,6 +109,7 @@ class FlightRequest(BaseModel):
 class PredictionOutput(BaseModel):
     airline_code: str
     delay_prediction: int
+    will_be_delayed: bool
 
 
 # ========================
@@ -150,9 +151,12 @@ def predict_delay(request: FlightRequest):
             detail=f"Error interno al predecir: {str(e)}"
         )
 
+    will_be_delayed = int(prediction) > 0
+
     return PredictionOutput(
         airline_code=airline_code,
-        delay_prediction=int(prediction)
+        delay_prediction=int(prediction),
+        will_be_delayed=will_be_delayed
     )
 
 
