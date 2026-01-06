@@ -55,24 +55,5 @@ src/main/java/com/flightontime
 │
 └── FlightDelayApiApplication.java
 
-Dentro de la carpeta python-service copiar el archivo .pkl
-Dentro de la carpeta python-service copiar el archivo .csv
-
-Para ejecutar servidor python dentro de la carpeta python-service utilizando un powershell ejecutar
-python appOK.py  (Aqui esta el microservicio de Python)
-
-Luego en postman hacer un request utilizando el metodo POST
-
-con el siguiente JSON
-
-{
-"aerolinea": "F9",
-"origen": "DEN",
-"destino": "LAX",
-"fechaPartida": "2025-11-10T14:30:00",
-"distanciaKm": 350
-}
-
-
 ----
 
