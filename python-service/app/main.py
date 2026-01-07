@@ -110,6 +110,8 @@ class PredictionOutput(BaseModel):
     airline_code: str
     delay_prediction: int
     will_be_delayed: bool
+    delay_probability: float
+
 
 
 # ========================
@@ -144,7 +146,16 @@ def predict_delay(request: FlightRequest):
     }])
 
     try:
+        # Predicción binaria (0 o 1)
         prediction = model.predict(input_df)[0]
+
+        # Probabilidad de retraso (clase 1)
+        if hasattr(model, "predict_proba"):
+            delay_probability = model.predict_proba(input_df)[0][1]
+            delay_probability = round(float(delay_probability) * 100, 2)
+        else:
+            delay_probability = 0.0
+
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -156,9 +167,9 @@ def predict_delay(request: FlightRequest):
     return PredictionOutput(
         airline_code=airline_code,
         delay_prediction=int(prediction),
-        will_be_delayed=will_be_delayed
+        will_be_delayed=will_be_delayed,
+        delay_probability=delay_probability
     )
-
 
 @app.get("/test")
 def test():
