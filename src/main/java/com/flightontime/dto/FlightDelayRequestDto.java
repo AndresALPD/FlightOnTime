@@ -10,27 +10,27 @@ import lombok.Data;
 @Data
 public class FlightDelayRequestDto {
 
-    @NotBlank
+    @NotBlank(message = "La aerolínea es obligatoria")
     private String aerolinea;
 
-    @NotNull
-    @Min(0)
-    @Max(23)
+    @NotNull(message = "La hora de salida es obligatoria")
+    @Min(value = 0, message = "La hora de salida debe estar entre 0 y 23")
+    @Max(value = 23, message = "La hora de salida debe estar entre 0 y 23")
     private Integer hora_salida;
 
-    @NotNull
-    @Min(1)
-    @Max(7)
+    @NotNull(message = "El día de la semana es obligatorio")
+    @Min(value = 1, message = "El día de la semana debe estar entre 1 (Lunes) y 7 (Domingo)")
+    @Max(value = 7, message = "El día de la semana debe estar entre 1 (Lunes) y 7 (Domingo)")
     private Integer dia_semana;
 
-    @NotNull
-    @Min(1)
+    @NotNull(message = "La distancia del vuelo es obligatoria")
+    @Min(value = 1, message = "La distancia del vuelo debe ser mayor a 0 km")
     private Double distancia_km;
 
-    @Min(0)
+    @Min(value = 0, message = "El tiempo de taxi-out no puede ser negativo")
     private Integer taxi_out = 15;
 
-    @Min(0)
-    @Max(1)
+    @Min(value = 0, message = "El campo es_finde solo puede ser 0 (No) o 1 (Sí)")
+    @Max(value = 1, message = "El campo es_finde solo puede ser 0 (No) o 1 (Sí)")
     private Integer es_finde = 0;
 }

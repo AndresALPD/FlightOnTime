@@ -2,6 +2,7 @@ package com.flightontime.service;
 
 import com.flightontime.dto.FlightDelayRequestDto;
 import com.flightontime.dto.FlightDelayResponseDto;
+import com.flightontime.exception.ExternalServiceException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -44,8 +45,8 @@ public class FlightDelayService {
 
         } catch (HttpServerErrorException e) {
             // Errores 5xx (fallo interno del microservicio)
-            throw new RuntimeException(
-                    "El microservicio de predicción no está disponible"
+            throw new ExternalServiceException(
+                    "Error al comunicarse con el microservicio de predicción"
             );
         }
     }
