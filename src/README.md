@@ -45,6 +45,11 @@ venv\Scripts\activate
 uvicorn app.main:app --port 5000 --reload
 ```
 
+Compilar backend Spring Boot
+```
+mvn clean install
+```
+
 Iniciar backend Spring Boot
 ```
 mvn spring-boot:run
