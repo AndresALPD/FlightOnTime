@@ -42,4 +42,43 @@ public class FlightDelayRequestDto {
     private Integer es_finde = 0;
     */
 
+    public String getAerolinea() {
+        return aerolinea;
+    }
+
+    public void setAerolinea(String aerolinea) {
+        this.aerolinea = aerolinea;
+    }
+
+    public Integer getHora_salida() {
+        return hora_salida;
+    }
+
+    public void setHora_salida(Integer hora_salida) {
+        this.hora_salida = hora_salida;
+    }
+
+    public LocalDate getFecha_salida() {
+        return fecha_salida;
+    }
+
+    public void setFecha_salida(LocalDate fecha_salida) {
+        this.fecha_salida = fecha_salida;
+    }
+
+    public Double getDistancia_km() {
+        return distancia_km;
+    }
+
+    public void setDistancia_km(Double distancia_km) {
+        this.distancia_km = distancia_km;
+    }
+
+    public Integer getTaxi_out() {
+        return taxi_out;
+    }
+
+    public void setTaxi_out(Integer taxi_out) {
+        this.taxi_out = taxi_out;
+    }
 }
