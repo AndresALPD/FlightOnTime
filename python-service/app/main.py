@@ -4,6 +4,12 @@ from contextlib import asynccontextmanager
 import pandas as pd
 import joblib
 import os
+from datetime import datetime, date
+
+# ========================
+# HISTORIAL DE PREDICCIONES (MEMORIA)
+# ========================
+PREDICTIONS_HISTORY = []
 
 # ========================
 # RUTAS
@@ -164,6 +170,14 @@ def predict_delay(request: FlightRequest):
 
     will_be_delayed = int(prediction) > 0
 
+    # Guardar predicción para estadísticas
+    PREDICTIONS_HISTORY.append({
+        "timestamp": datetime.utcnow(),
+        "airline": airline_code,
+        "will_be_delayed": will_be_delayed,
+        "delay_probability": delay_probability
+    })
+
     return PredictionOutput(
         airline_code=airline_code,
         delay_prediction=int(prediction),
@@ -182,6 +196,38 @@ def test():
         es_finde=0
     )
     return predict_delay(ejemplo)
+
+@app.get("/stats")
+def get_stats():
+    """
+    Devuelve estadísticas agregadas de las predicciones del día actual
+    """
+    today = date.today()
+
+    today_predictions = [
+        p for p in PREDICTIONS_HISTORY
+        if p["timestamp"].date() == today
+    ]
+
+    total = len(today_predictions)
+
+    if total == 0:
+        return {
+            "fecha": str(today),
+            "total_vuelos": 0,
+            "porcentaje_retrasados": 0.0,
+            "porcentaje_puntuales": 0.0
+        }
+
+    delayed = sum(1 for p in today_predictions if p["will_be_delayed"])
+    on_time = total - delayed
+
+    return {
+        "fecha": str(today),
+        "total_vuelos": total,
+        "porcentaje_retrasados": round(delayed / total * 100, 2),
+        "porcentaje_puntuales": round(on_time / total * 100, 2)
+    }
 
 
 # ========================
