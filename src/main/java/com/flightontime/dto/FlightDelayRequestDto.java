@@ -19,6 +19,13 @@ public class FlightDelayRequestDto {
     @NotBlank(message = "La aerolínea es obligatoria")
      private String aerolinea;
 
+    @NotNull(message = "El aeropuerto de origen es obligatorio")
+    private String origen;
+
+    @NotNull(message = "El aeropuerto de destino es obligatorio")
+    private String destino;
+
+
     @NotNull(message = "La hora de salida es obligatoria")
     @Min(value = 0, message = "La hora de salida debe estar entre 0 y 23")
     @Max(value = 23, message = "La hora de salida debe estar entre 0 y 23")
@@ -36,11 +43,7 @@ public class FlightDelayRequestDto {
     @Min(value = 0, message = "El tiempo de taxi-out no puede ser negativo")
     private Integer taxi_out = 15;
 
-    /*
-    @Min(value = 0, message = "El campo es_finde solo puede ser 0 (No) o 1 (Sí)")
-    @Max(value = 1, message = "El campo es_finde solo puede ser 0 (No) o 1 (Sí)")
-    private Integer es_finde = 0;
-    */
+
 
     public String getAerolinea() {
         return aerolinea;
@@ -50,11 +53,29 @@ public class FlightDelayRequestDto {
         this.aerolinea = aerolinea;
     }
 
-    public Integer getHora_salida() {
+
+    public String getOrigen() {
+        return origen;
+    }
+
+    public void setOrigen(String origen) {
+        this.origen = origen;
+    }
+
+    public String getDestino() {
+        return destino;
+    }
+
+    public void setDestino(String destino) {
+        this.destino = destino;
+    }
+
+
+    public Integer getHoraSalida() {
         return hora_salida;
     }
 
-    public void setHora_salida(Integer hora_salida) {
+    public void setHoraSalida(Integer hora_salida) {
         this.hora_salida = hora_salida;
     }
 
@@ -81,4 +102,9 @@ public class FlightDelayRequestDto {
     public void setTaxi_out(Integer taxi_out) {
         this.taxi_out = taxi_out;
     }
+
+
+
+
+
 }

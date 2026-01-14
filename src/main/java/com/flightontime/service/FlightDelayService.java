@@ -69,16 +69,16 @@ public class FlightDelayService {
 
                 // Mapeo desde el Request original
                 entity.setAirlineCode(requestDto.getAerolinea());
-                // Nota: Si no tienes origen/destino en el DTO, puedes dejarlos nulos o asignar valores por defecto
-                entity.setOrigin("N/A");
-                entity.setDest("N/A");
+                entity.setOrigin(requestDto.getOrigen());
+                entity.setDest(requestDto.getDestino());
+                entity.setFlightHora(Long.valueOf(requestDto.getHora_salida()));
                 entity.setFlightDate(requestDto.getFecha_salida());
 
                 // Mapeo desde la respuesta de Python
                 entity.setProbabilidadRetraso(responseBody.getProbabilidad_retraso());
                 entity.setRetrasado(responseBody.getRetrasado());
-                ///entity.setRetrasado(responseBody.getPrediccion()); // "SÍ" o "NO"
-
+                entity.setNivelRiesgo(responseBody.getNivel_riesgo());
+                entity.setMensaje(responseBody.getMensaje());
                 // Guardar físicamente en la tabla 'predicciones_vuelos'
                 prediccionRepository.save(entity);
             }
