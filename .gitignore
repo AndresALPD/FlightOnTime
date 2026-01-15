@@ -1,4 +1,4 @@
-HELP.md
+# --- Java / Maven ---
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
@@ -32,15 +32,22 @@ build/
 ### VS Code ###
 .vscode/
 
+# --- Machine Learning & Data ---
+# Ignora cualquier archivo de modelo o datos en cualquier subdirectorio
+**/*.pkl
+**/*.csv
+**/data/
+**/model/
 
- # Modelos entrenados
- *.pkl
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+.env
 
- # Datos pesados
- *.csv
- data/
-
- # Python
- __pycache__/
- *.pyc
- .venv/
+# --- Logs y Temporales ---
+*.log
+hs_err_pid*

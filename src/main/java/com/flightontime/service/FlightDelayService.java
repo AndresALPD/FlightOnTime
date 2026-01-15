@@ -3,6 +3,7 @@ package com.flightontime.service;
 import com.flightontime.dto.FlightDelayModelRequestDto;
 import com.flightontime.dto.FlightDelayRequestDto;
 import com.flightontime.dto.FlightDelayResponseDto;
+import com.flightontime.dto.FlightDelayStatsResponseDto;
 import com.flightontime.exception.AerolineaNoEncontradaException;
 import com.flightontime.exception.ExternalServiceException;
 import com.flightontime.entity.PrediccionEntity;
@@ -17,6 +18,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 
 @Service
 public class FlightDelayService {
@@ -94,6 +96,41 @@ public class FlightDelayService {
         }
     }
 
+    public FlightDelayStatsResponseDto getDailyStats(String fechaStr) {
+        // 1. Determinar la fecha (si no viene, usar hoy)
+        LocalDate fecha;
+        try {
+            fecha = (fechaStr == null || fechaStr.isBlank())
+                    ? LocalDate.now()
+                    : LocalDate.parse(fechaStr);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Formato de fecha inválido. Use YYYY-MM-DD");
+        }
+
+        // 2. Consultar conteos en el repositorio
+        long total = prediccionRepository.countByFlightDate(fecha);
+
+        // Asumimos que "Retrasado" es el valor que devuelve Python y guardas en la entidad
+        // Según tu ResponseDto, el campo es String. Ajusta "Retrasado" por el valor exacto (ej: "S" o "Sí")
+        long retrasados = prediccionRepository.countByFlightDateAndRetrasado(fecha, "SI");
+        long aTiempo = total - retrasados;
+
+        // 3. Calcular porcentajes con manejo de división por cero
+        double porcRetrasados = (total > 0) ? (double) retrasados / total * 100 : 0;
+        double porcPuntuales = (total > 0) ? (double) aTiempo / total * 100 : 0;
+
+        // 4. Construir y devolver el DTO
+        FlightDelayStatsResponseDto stats = new FlightDelayStatsResponseDto();
+        stats.setFecha(fecha.toString());
+        stats.setTotalVuelos(total);
+        stats.setVuelosRetrasados(retrasados);
+        stats.setVuelosATiempo(aTiempo);
+        stats.setPorcentajeRetrasados(Math.round(porcRetrasados * 100.0) / 100.0);
+        stats.setPorcentajePuntuales(Math.round(porcPuntuales * 100.0) / 100.0);
+
+        return stats;
+    }
+
     private String extraerMensaje(HttpClientErrorException.BadRequest e) {
         try {
             String body = e.getResponseBodyAsString();
@@ -110,4 +147,7 @@ public class FlightDelayService {
             return "Aerolínea no soportada";
         }
     }
+
+
+
 }
