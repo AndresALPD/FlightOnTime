@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Predicción de Retraso de Vuelo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 500px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin: auto;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+
+        button {
+            margin-top: 20px;
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #125aa0;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Predicción de retraso de vuelo ✈️</h2>
+
+    <label for="aerolinea">Aerolínea</label>
+    <select id="aerolinea" required>
+        <option value="">Seleccione una aerolínea</option>
+    </select>
+    <span class="error" id="aerolineaError"></span>
+
+    <label>Aeropuerto de origen</label>
+    <input type="text" id="origen" placeholder="Ej: SJO" maxlength="3" oninput="this.value = this.value.toUpperCase()">
+    <small class="error" id="error-origen"></small>
+
+    <label>Aeropuerto de destino</label>
+    <input type="text" id="destino" placeholder="Ej: MIA" maxlength="3" oninput="this.value = this.value.toUpperCase()">
+    <small class="error" id="error-destino"></small>
+
+    <label>Hora de salida (0-23)</label>
+    <input type="number"
+           id="hora_salida"
+           min="0"
+           max="23"
+           oninput="this.value = this.value.slice(0, 2)">
+    <small class="error" id="error-hora_salida"></small>
+
+    <label>Fecha de salida</label>
+    <input type="date" id="fecha_salida">
+    <small class="error" id="error-fecha_salida"></small>
+
+    <label>Distancia (km)</label>
+    <input type="number"
+           id="distancia_km"
+           min="1"
+           oninput="this.value = this.value.slice(0, 5)">
+    <small class="error" id="error-distancia_km"></small>
+
+    <label>Taxi Out (minutos)</label>
+    <input type="number"
+           id="taxi_out"
+           value="15"
+           min="0"
+           oninput="this.value = this.value.slice(0, 2)">
+    <small class="error" id="error-taxi_out"></small>
+
+    <button onclick="predecir()">Predecir</button>
+
+    <div id="resultado" class="result"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        fetch("http://localhost:5000/airlines")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Error al cargar aerolíneas");
+                }
+                return response.json();
+            })
+            .then(data => {
+                const select = document.getElementById("aerolinea");
+
+                data.forEach(a => {
+                    const option = document.createElement("option");
+                    option.value = a.AIRLINE_CODE;
+                    option.textContent = `${a.AIRLINE_CODE} - ${a.AIRLINE}`;
+                    select.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error(error);
+                alert("No se pudieron cargar las aerolíneas");
+            });
+    });
+</script>
+
