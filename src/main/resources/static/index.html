@@ -58,18 +58,16 @@
 <div class="container">
     <h2>Predicción de retraso de vuelo ✈️</h2>
 
-    <label for="aerolinea">Aerolínea</label>
-    <select id="aerolinea" required>
-        <option value="">Seleccione una aerolínea</option>
-    </select>
-    <span class="error" id="aerolineaError"></span>
+    <label>Aerolínea</label>
+    <select id="aerolinea"></select>
+    <small class="error" id="aerolineaError"></small>
 
-    <label>Aeropuerto de origen</label>
-    <input type="text" id="origen" placeholder="Ej: SJO" maxlength="3" oninput="this.value = this.value.toUpperCase()">
+    <label>Origen</label>
+    <select id="origen"></select>
     <small class="error" id="error-origen"></small>
 
-    <label>Aeropuerto de destino</label>
-    <input type="text" id="destino" placeholder="Ej: MIA" maxlength="3" oninput="this.value = this.value.toUpperCase()">
+    <label>Destino</label>
+    <select id="destino"></select>
     <small class="error" id="error-destino"></small>
 
     <label>Hora de salida (0-23)</label>
@@ -85,19 +83,10 @@
     <small class="error" id="error-fecha_salida"></small>
 
     <label>Distancia (km)</label>
-    <input type="number"
-           id="distancia_km"
-           min="1"
-           oninput="this.value = this.value.slice(0, 5)">
-    <small class="error" id="error-distancia_km"></small>
+    <input type="number" id="distancia_km" readonly>
 
-    <label>Taxi Out (minutos)</label>
-    <input type="number"
-           id="taxi_out"
-           value="15"
-           min="0"
-           oninput="this.value = this.value.slice(0, 2)">
-    <small class="error" id="error-taxi_out"></small>
+    <label>Taxi Out (min)</label>
+    <input type="number" id="taxi_out" readonly>
 
     <button onclick="predecir()">Predecir</button>
 
@@ -109,28 +98,105 @@
 </html>
 
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        fetch("http://localhost:5000/airlines")
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Error al cargar aerolíneas");
-                }
-                return response.json();
-            })
-            .then(data => {
-                const select = document.getElementById("aerolinea");
+    document.addEventListener("DOMContentLoaded", cargarAerolineas);
 
-                data.forEach(a => {
-                    const option = document.createElement("option");
-                    option.value = a.AIRLINE_CODE;
-                    option.textContent = `${a.AIRLINE_CODE} - ${a.AIRLINE}`;
-                    select.appendChild(option);
-                });
-            })
-            .catch(error => {
-                console.error(error);
-                alert("No se pudieron cargar las aerolíneas");
-            });
-    });
+    async function cargarAerolineas() {
+        const res = await fetch("http://localhost:8080/api/catalogs/airlines");
+        const data = await res.json();
+
+        const select = document.getElementById("aerolinea");
+        select.innerHTML = `<option value="">Seleccione aerolínea</option>`;
+
+        data.forEach(a => {
+            select.innerHTML += `
+            <option value="${a.code}">
+                ${a.code} - ${a.name}
+            </option>
+        `;
+        });
+    }
 </script>
 
+<script>
+    document.getElementById("aerolinea")
+        .addEventListener("change", cargarOrigenes);
+
+    async function cargarOrigenes() {
+        const airline = this.value;
+        if (!airline) return;
+
+        const res = await fetch(
+            `http://localhost:8080/api/catalogs/origins?airline=${airline}`
+        );
+        const data = await res.json();
+
+        const select = document.getElementById("origen");
+        select.innerHTML = `<option value="">Seleccione origen</option>`;
+
+        data.forEach(o => {
+            select.innerHTML += `
+            <option value="${o.code}">
+                ${o.code} - ${o.city}
+            </option>
+        `;
+        });
+
+        // Reset dependientes
+        document.getElementById("destino").innerHTML = `<option value="">Seleccione destino</option>`;
+        document.getElementById("distancia_km").value = "";
+        document.getElementById("taxi_out").value = "";
+    }
+</script>
+
+<script>
+    document.getElementById("origen")
+        .addEventListener("change", cargarDestinos);
+
+    async function cargarDestinos() {
+        const airline = document.getElementById("aerolinea").value;
+        const origin  = this.value;
+
+        if (!origin) return;
+
+        const res = await fetch(
+            `http://localhost:8080/api/catalogs/destinations?airline=${airline}&origin=${origin}`
+        );
+        const data = await res.json();
+
+        const select = document.getElementById("destino");
+        select.innerHTML = `<option value="">Seleccione destino</option>`;
+
+        data.forEach(d => {
+            select.innerHTML += `
+            <option value="${d.code}">
+                ${d.code} - ${d.city}
+            </option>
+        `;
+        });
+
+        document.getElementById("distancia_km").value = "";
+        document.getElementById("taxi_out").value = "";
+    }
+</script>
+
+<script>
+    document.getElementById("destino")
+        .addEventListener("change", cargarDistancia);
+
+    async function cargarDistancia() {
+        const airline = document.getElementById("aerolinea").value;
+        const origin  = document.getElementById("origen").value;
+        const dest    = this.value;
+
+        if (!dest) return;
+
+        const res = await fetch(
+            `http://localhost:8080/api/catalogs/distance?airline=${airline}&origin=${origin}&dest=${dest}`
+        );
+
+        const data = await res.json();
+
+        document.getElementById("distancia_km").value = data.distance;
+        document.getElementById("taxi_out").value = data.taxi_out;
+    }
+</script>
