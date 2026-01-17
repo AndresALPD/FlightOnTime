@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from contextlib import asynccontextmanager
+from fastapi.middleware.cors import CORSMiddleware
+
 import pandas as pd
 import joblib
 import os
@@ -14,8 +16,8 @@ PREDICTIONS_HISTORY = []
 # ========================
 # RUTAS
 # ========================
-MODEL_PATH = "model/flight_delay_model_backend.pkl"
-CSV_PATH = "data/flights_sample_3m.csv"
+MODEL_PATH = "app/model/flight_delay_model_backend.pkl"
+CSV_PATH = "app/data/flights_sample_3m.csv"
 
 # ========================
 # VARIABLES GLOBALES
@@ -96,6 +98,15 @@ app = FastAPI(
     version="1.2.0",
     lifespan=lifespan
 )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8080"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # ========================
 # SCHEMA DE ENTRADA
