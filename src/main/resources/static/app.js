@@ -86,7 +86,6 @@ function mostrarResultado(data) {
     resultadoDiv.style.backgroundColor = colorFondo;
     resultadoDiv.style.color = "#333";
 
-    // Construimos el HTML nuevo con estructura de Tarjeta
     resultadoDiv.innerHTML = `
         <div class="card-result" style="border-left-color: ${colorBorde};">
             <div class="card-header-res">
@@ -99,16 +98,16 @@ function mostrarResultado(data) {
             </div>
 
             <div class="card-body-res">
-                <p><strong><i class="fa-solid fa-plane"></i> Aerolínea:</strong> 
+                <p><strong><i class="fa-solid fa-plane"></i> Aerolínea: </strong>&nbsp;
                    ${data.aerolinea_nombre} <small>(${data.aerolinea_codigo})</small>
                 </p>
 
-                <p><strong><i class="fa-solid fa-chart-line"></i> Probabilidad retraso:</strong> 
+                <p><strong><i class="fa-solid fa-chart-line"></i> Probabilidad retraso: </strong>&nbsp;
                    ${data.probabilidad_retraso}%
                 </p>
 
-                <p><strong><i class="fa-regular fa-comment-dots"></i> Estado:</strong> 
-                   ${data.retrasado ? 'Se espera retraso' : 'A tiempo'}
+                <p><strong><i class="fa-regular fa-comment-dots"></i> Estado: </strong>&nbsp;
+                   ${data.retrasado === 'SI' ? 'Se espera retraso' : 'A tiempo'}
                 </p>
 
                 <p style="margin-top: 10px; font-style: italic; color: #555; border-top: 1px dashed #ccc; padding-top: 10px;">
@@ -132,12 +131,8 @@ function mostrarError(error) {
     // Si vienen errores de validación
     if (error.errors) {
         for (const campo in error.errors) {
-            // Nota: Mantenemos tu lógica de búsqueda de ID
             const errorSpan = document.getElementById(`error-${campo}`);
 
-            // Fix: Tu HTML original tenía un caso especial id="aerolineaError"
-            // pero el loop busca error-aerolinea.
-            // Agregamos un fallback por si acaso:
             if (errorSpan) {
                 errorSpan.innerText = error.errors[campo];
             } else if (campo === 'aerolinea') {
@@ -154,5 +149,97 @@ function mostrarError(error) {
         resultadoDiv.classList.add("result-visible");
     }
 }
+
+function toggleWeather() {
+    document.getElementById("weather-panel")
+        .classList.toggle("hidden");
+}
+
+function consultarClima() {
+    const resultDiv = document.getElementById("weather-result");
+
+    if (!selectedCity) {
+        resultDiv.innerHTML = "<span class='error'><i class='fa-solid fa-circle-exclamation'></i> Seleccione una ciudad</span>";
+        return;
+    }
+
+    const { lat, lon } = selectedCity;
+
+    resultDiv.innerHTML = `
+        <div style="padding: 20px;">
+            <i class="fa-solid fa-circle-notch fa-spin" style="color: var(--primary-color);"></i>
+        </div>
+    `;
+
+    fetch(`http://localhost:8080/api/weather/by-coordinates?lat=${lat}&lon=${lon}`)
+        .then(res => res.json())
+        .then(data => {
+            // Inyectamos una mini tarjeta de datos con iconos de FontAwesome
+            resultDiv.innerHTML = `
+                <div class="weather-card-mini">
+                    <div class="weather-item">
+                        <span>Temp</span>
+                        <strong>${data.temperature} °C</strong>
+                    </div>
+                    <div class="weather-item">
+                        <span>Cielo</span>
+                        <strong style="text-transform: capitalize;">${data.description}</strong>
+                    </div>
+                    <div class="weather-item">
+                        <span>Humedad</span>
+                        <strong>${data.humidity}%</strong>
+                    </div>
+                    <div class="weather-item">
+                        <span>Viento</span>
+                        <strong>${data.windSpeed} m/s</strong>
+                    </div>
+                </div>
+                <p style="font-size: 0.7rem; color: #999; margin-top: 10px;">
+                    Datos actualizados para ${selectedCity.name}
+                </p>
+            `;
+        })
+        .catch(() => {
+            resultDiv.innerHTML = "<span class='error'><i class='fa-solid fa-triangle-exclamation'></i> Error de conexión</span>";
+        });
+}
+
+let selectedCity = null;
+
+const inputCity = document.getElementById("weather-city");
+const suggestions = document.getElementById("city-suggestions");
+
+let debounceTimer;
+
+inputCity.addEventListener("input", () => {
+    clearTimeout(debounceTimer);
+
+    const query = inputCity.value;
+    if (query.length < 3) {
+        suggestions.innerHTML = "";
+        return;
+    }
+
+    debounceTimer = setTimeout(() => {
+        fetch(`http://localhost:8080/api/weather/cities?q=${query}`)
+            .then(res => res.json())
+            .then(data => {
+                suggestions.innerHTML = "";
+                data.forEach(city => {
+                    const li = document.createElement("li");
+                    li.textContent = `${city.name}, ${city.country}`;
+
+                    li.onclick = () => {
+                        inputCity.value = `${city.name}, ${city.country}`;
+                        selectedCity = city;
+                        suggestions.innerHTML = "";
+                    };
+
+                    suggestions.appendChild(li);
+                });
+
+            });
+    }, 300);
+});
 
 

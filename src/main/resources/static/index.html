@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlightOnTime | Predicción de Retrasos de vuelo</title>
+    <title>FlightOnTime</title>
+
+    <link rel="icon" type="image/png" href="img/plane.png">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -69,6 +71,38 @@
         </button>
 
         <div id="resultado" class="result-container"></div>
+    </div>
+</div>
+
+
+
+<div id="weather-button" onclick="toggleWeather()" title="Consultar Clima">
+    <i class="fa-solid fa-cloud-sun"></i>
+</div>
+
+<div id="weather-panel" class="weather-panel hidden">
+    <div class="weather-header">
+        <i class="fa-solid fa-temperature-half"></i>
+        <h3>Estado del Tiempo</h3>
+        <button class="close-panel" onclick="toggleWeather()">&times;</button>
+    </div>
+
+    <div class="weather-body">
+        <div class="input-wrapper">
+            <label for="weather-city">Ciudad de interés</label>
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="weather-city" autocomplete="off" placeholder="Ej: Madrid, ES">
+            </div>
+            <ul id="city-suggestions" class="suggestions"></ul>
+        </div>
+
+        <button onclick="consultarClima()" class="btn-weather">
+            Consultar <i class="fa-solid fa-chevron-right"></i>
+        </button>
+
+        <div id="weather-result" class="weather-result-display">
+        </div>
     </div>
 </div>
 
