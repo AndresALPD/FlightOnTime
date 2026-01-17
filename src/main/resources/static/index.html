@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlightOnTime</title>
+
+    <link rel="icon" type="image/png" href="img/plane.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="main-wrapper">
+    <div class="glass-card">
+        <header>
+            <a href="index.html" class="header-link">
+                <div class="icon-header">
+                    <i class="fa-solid fa-plane-departure"></i>
+                </div>
+            </a>
+            <h2>FlightOnTime</h2>
+            <p>Predicción inteligente de retrasos de vuelo</p>
+        </header>
+
+        <div class="form-grid">
+            <div class="input-group full-width">
+                <label for="aerolinea"><i class="fa-solid fa-building"></i> Aerolínea</label>
+                <select id="aerolinea"></select>
+                <small class="error" id="aerolineaError"></small>
+            </div>
+
+            <div class="input-group">
+                <label for="origen"><i class="fa-solid fa-map-pin"></i> Origen</label>
+                <select id="origen"></select>
+                <small class="error" id="error-origen"></small>
+            </div>
+
+            <div class="input-group">
+                <label for="destino"><i class="fa-solid fa-location-arrow"></i> Destino</label>
+                <select id="destino"></select>
+                <small class="error" id="error-destino"></small>
+            </div>
+
+            <div class="input-group">
+                <label for="fecha_salida"><i class="fa-regular fa-calendar"></i> Fecha</label>
+                <input type="date" id="fecha_salida">
+                <small class="error" id="error-fecha_salida"></small>
+            </div>
+
+            <div class="input-group">
+                <label for="hora_salida"><i class="fa-regular fa-clock"></i> Hora (0-23h)</label>
+                <input type="number" id="hora_salida" min="0" max="23" placeholder="Ej: 14">
+                <small class="error" id="error-hora_salida"></small>
+            </div>
+
+            <div class="input-group technical">
+                <label for="distancia_km">Distancia (km)</label>
+                <input type="number" id="distancia_km" readonly placeholder="Calc...">
+            </div>
+
+            <div class="input-group technical">
+                <label for="taxi_out">Taxi Out (min)</label>
+                <input type="number" id="taxi_out" readonly placeholder="Calc...">
+            </div>
+        </div>
+
+        <button onclick="predecir()" class="btn-predict">
+            Analizar Vuelo <i class="fa-solid fa-bolt"></i>
+        </button>
+
+        <div id="resultado" class="result-container"></div>
+    </div>
+</div>
+
+<div id="grafana-button" onclick="toggleGrafana()" title="Ver Dashboard Grafana">
+    <i class="fa-solid fa-chart-line"></i>
+</div>
+
+<div id="grafana-panel" class="weather-panel hidden"> <div class="weather-header" style="background: #F47A20;"> <i class="fa-solid fa-gauge-high"></i>
+    <h3>Métricas en Vivo</h3>
+    <button class="close-panel" onclick="toggleGrafana()">&times;</button>
+</div>
+
+    <div class="weather-body">
+        <p style="font-size: 0.9rem; color: #555; margin-bottom: 15px;">
+            Visualiza el rendimiento de las predicciones y estadísticas del servidor en tiempo real.
+        </p>
+
+        <a href="http://18.231.95.162:3000/public-dashboards/2a2b1a40bad94c39a1b7eb6376e4a8f6"
+           target="_blank"
+           style="text-decoration: none;">
+            <button class="btn-grafana">
+                Abrir Dashboard <i class="fa-solid fa-external-link-alt"></i>
+            </button>
+        </a>
+    </div>
+</div>
+
+<div id="weather-button" onclick="toggleWeather()" title="Consultar Clima">
+    <i class="fa-solid fa-cloud-sun"></i>
+</div>
+
+<div id="weather-panel" class="weather-panel hidden">
+    <div class="weather-header">
+        <i class="fa-solid fa-temperature-half"></i>
+        <h3>Estado del Tiempo</h3>
+        <button class="close-panel" onclick="toggleWeather()">&times;</button>
+    </div>
+
+    <div class="weather-body">
+        <div class="input-wrapper">
+            <label for="weather-city">Ciudad de interés</label>
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="weather-city" autocomplete="off" placeholder="Ej: Madrid, ES">
+            </div>
+            <ul id="city-suggestions" class="suggestions"></ul>
+        </div>
+
+        <button onclick="consultarClima()" class="btn-weather">
+            Consultar <i class="fa-solid fa-chevron-right"></i>
+        </button>
+
+        <div id="weather-result" class="weather-result-display">
+        </div>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
+
+<script>
+    document.addEventListener("DOMContentLoaded", cargarAerolineas);
+
+    async function cargarAerolineas() {
+        const res = await fetch("http://localhost:8080/api/catalogs/airlines");
+        const data = await res.json();
+
+        const select = document.getElementById("aerolinea");
+        select.innerHTML = `<option value="">Seleccione aerolínea</option>`;
+
+        data.forEach(a => {
+            select.innerHTML += `
+            <option value="${a.code}">
+                ${a.code} - ${a.name}
+            </option>
+        `;
+        });
+    }
+</script>
+
+<script>
+    document.getElementById("aerolinea")
+        .addEventListener("change", cargarOrigenes);
+
+    async function cargarOrigenes() {
+        const airline = this.value;
+        if (!airline) return;
+
+        const res = await fetch(
+            `http://localhost:8080/api/catalogs/origins?airline=${airline}`
+        );
+        const data = await res.json();
+
+        const select = document.getElementById("origen");
+        select.innerHTML = `<option value="">Seleccione origen</option>`;
+
+        data.forEach(o => {
+            select.innerHTML += `
+            <option value="${o.code}">
+                ${o.code} - ${o.city}
+            </option>
+        `;
+        });
+
+        // Reset dependientes
+        document.getElementById("destino").innerHTML = `<option value="">Seleccione destino</option>`;
+        document.getElementById("distancia_km").value = "";
+        document.getElementById("taxi_out").value = "";
+    }
+</script>
+
+<script>
+    document.getElementById("origen")
+        .addEventListener("change", cargarDestinos);
+
+    async function cargarDestinos() {
+        const airline = document.getElementById("aerolinea").value;
+        const origin  = this.value;
+
+        if (!origin) return;
+
+        const res = await fetch(
+            `http://localhost:8080/api/catalogs/destinations?airline=${airline}&origin=${origin}`
+        );
+        const data = await res.json();
+
+        const select = document.getElementById("destino");
+        select.innerHTML = `<option value="">Seleccione destino</option>`;
+
+        data.forEach(d => {
+            select.innerHTML += `
+            <option value="${d.code}">
+                ${d.code} - ${d.city}
+            </option>
+        `;
+        });
+
+        document.getElementById("distancia_km").value = "";
+        document.getElementById("taxi_out").value = "";
+    }
+</script>
+
+<script>
+    document.getElementById("destino")
+        .addEventListener("change", cargarDistancia);
+
+    async function cargarDistancia() {
+        const airline = document.getElementById("aerolinea").value;
+        const origin  = document.getElementById("origen").value;
+        const dest    = this.value;
+
+        if (!dest) return;
+
+        const res = await fetch(
+            `http://localhost:8080/api/catalogs/distance?airline=${airline}&origin=${origin}&dest=${dest}`
+        );
+
+        const data = await res.json();
+
+        document.getElementById("distancia_km").value = data.distance;
+        document.getElementById("taxi_out").value = data.taxi_out;
+    }
+</script>

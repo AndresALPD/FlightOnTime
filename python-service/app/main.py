@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from contextlib import asynccontextmanager
+from fastapi.middleware.cors import CORSMiddleware
+
 import pandas as pd
 import joblib
 import os
@@ -21,21 +23,21 @@ CSV_PATH = "app/data/flights_sample_3m.csv"
 # VARIABLES GLOBALES
 # ========================
 model = None
-AEROLINEAS_VALIDAS = set()     # AIRLINE_CODE
-AIRLINE_MAP = []              # [{code, name}]
-EXPECTED_COLUMNS = []
+AEROLINEAS_VALIDAS = set()
+AIRLINE_MAP = []
+AIRLINE_NAME_BY_CODE = {}
 
 # ========================
 # LIFESPAN
 # ========================
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global model, AEROLINEAS_VALIDAS, AIRLINE_MAP, EXPECTED_COLUMNS
+    global model, AEROLINEAS_VALIDAS, AIRLINE_MAP, AIRLINE_NAME_BY_CODE
 
     print("🚀 Iniciando FlightOnTime API")
 
     # ---------
-    # Cargar PKL
+    # Cargar modelo
     # ---------
     if not os.path.exists(MODEL_PATH):
         raise RuntimeError(f"❌ Modelo no encontrado: {MODEL_PATH}")
@@ -43,24 +45,19 @@ async def lifespan(app: FastAPI):
     loaded = joblib.load(MODEL_PATH)
 
     if isinstance(loaded, dict):
-        print("📦 PKL contiene un diccionario")
-
-        for key, value in loaded.items():
+        for value in loaded.values():
             if hasattr(value, "predict"):
                 model = value
-                print(f"✅ Modelo encontrado en la clave: '{key}'")
                 break
-        else:
-            raise RuntimeError("❌ No se encontró ningún objeto con predict()")
-
-        EXPECTED_COLUMNS = loaded.get("expected_columns", [])
+        if model is None:
+            raise RuntimeError("❌ No se encontró un modelo válido en el PKL")
     else:
         model = loaded
 
     print(f"🧠 Modelo cargado: {type(model).__name__}")
 
     # ---------
-    # CSV
+    # Cargar CSV de aerolíneas
     # ---------
     if not os.path.exists(CSV_PATH):
         raise RuntimeError(f"❌ CSV no encontrado: {CSV_PATH}")
@@ -83,7 +80,12 @@ async def lifespan(app: FastAPI):
         .to_dict(orient="records")
     )
 
-    print(f"✈️ Aerolíneas válidas: {len(AEROLINEAS_VALIDAS)}")
+    AIRLINE_NAME_BY_CODE = {
+        row["AIRLINE_CODE"]: row["AIRLINE"]
+        for row in AIRLINE_MAP
+    }
+
+    print(f"✈️ Aerolíneas cargadas: {len(AEROLINEAS_VALIDAS)}")
     yield
 
 
@@ -93,74 +95,81 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="FlightOnTime API",
     description="Predicción de retrasos de vuelos",
-    version="1.0.0",
+    version="1.2.0",
     lifespan=lifespan
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8080"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 # ========================
-# SCHEMAS
+# SCHEMA DE ENTRADA
 # ========================
 class FlightRequest(BaseModel):
-    AIRLINE: str = Field(..., alias="aerolinea", min_length=2, max_length=3)
-    DEP_HOUR: int = Field(..., alias="hora_salida", ge=0, le=23)
-    DAY_OF_WEEK: int = Field(..., alias="dia_semana", ge=1, le=7)
-    DISTANCE: float = Field(..., alias="distancia_km", gt=0)
-    TAXI_OUT: float = Field(15, alias="taxi_out", ge=0)
-    IS_WEEKEND: int = Field(0, alias="es_finde", ge=0, le=1)
+    aerolinea: str = Field(..., min_length=2, max_length=3)
+    hora_salida: int = Field(..., ge=0, le=23)
+    dia_semana: int = Field(..., ge=1, le=7)
+    distancia_km: float = Field(..., gt=0)
+    taxi_out: float = Field(15, ge=0)
+    es_finde: int = Field(0, ge=0, le=1)
 
-    class Config:
-        populate_by_name = True
-
-
+# ========================
+# SCHEMA DE SALIDA (NORMALIZADO)
+# ========================
 class PredictionOutput(BaseModel):
-    airline_code: str
-    delay_prediction: int
-    will_be_delayed: bool
-    delay_probability: float
-
-
+    aerolinea_codigo: str
+    aerolinea_nombre: str
+    retrasado: str
+    probabilidad_retraso: float
+    nivel_riesgo: str
+    mensaje: str
 
 # ========================
 # ENDPOINTS
 # ========================
 @app.get("/airlines")
 def listar_aerolineas():
-    """
-    Devuelve aerolíneas soportadas (código + nombre)
-    """
+    """Lista aerolíneas soportadas"""
     return AIRLINE_MAP
 
 
 @app.post("/predict", response_model=PredictionOutput)
 def predict_delay(request: FlightRequest):
 
-    airline_code = request.AIRLINE.upper()
+    aerolinea_codigo = request.aerolinea.upper()
 
-    if airline_code not in AEROLINEAS_VALIDAS:
+
+    if aerolinea_codigo not in AEROLINEAS_VALIDAS:
         raise HTTPException(
             status_code=400,
-            detail=f"Aerolínea no soportada: {airline_code}"
+            detail=f"Aerolínea no soportada: {aerolinea_codigo}"
         )
 
     input_df = pd.DataFrame([{
-        "DEP_HOUR": request.DEP_HOUR,
-        "DAY_OF_WEEK": request.DAY_OF_WEEK,
-        "IS_WEEKEND": request.IS_WEEKEND,
-        "DISTANCE": request.DISTANCE,
-        "TAXI_OUT": request.TAXI_OUT,
-        "AIRLINE": airline_code
+        "DEP_HOUR": request.hora_salida,
+        "DAY_OF_WEEK": request.dia_semana,
+        "IS_WEEKEND": request.es_finde,
+        "DISTANCE": request.distancia_km,
+        "TAXI_OUT": request.taxi_out,
+        "AIRLINE": aerolinea_codigo
     }])
 
     try:
-        # Predicción binaria (0 o 1)
-        prediction = model.predict(input_df)[0]
+        aerolinea_nombre = AIRLINE_NAME_BY_CODE.get(aerolinea_codigo, "Desconocida")
+        prediccion = int(model.predict(input_df)[0])
 
-        # Probabilidad de retraso (clase 1)
         if hasattr(model, "predict_proba"):
-            delay_probability = model.predict_proba(input_df)[0][1]
-            delay_probability = round(float(delay_probability) * 100, 2)
+            probabilidad_retraso = round(
+                float(model.predict_proba(input_df)[0][1]) * 100, 2
+            )
         else:
-            delay_probability = 0.0
+            probabilidad_retraso = 0.0
 
     except Exception as e:
         raise HTTPException(
@@ -168,52 +177,60 @@ def predict_delay(request: FlightRequest):
             detail=f"Error interno al predecir: {str(e)}"
         )
 
-    will_be_delayed = int(prediction) > 0
+    retrasado = "SI" if prediccion == 1 else "NO"
 
-    # Guardar predicción para estadísticas
-    PREDICTIONS_HISTORY.append({
-        "timestamp": datetime.utcnow(),
-        "airline": airline_code,
-        "will_be_delayed": will_be_delayed,
-        "delay_probability": delay_probability
-    })
+
+    # ========================
+    # INTERPRETACIÓN
+    # ========================
+
+    RIESGO_ALTO = 70
+    RIESGO_MEDIO = 40
+
+
+    if probabilidad_retraso >= RIESGO_ALTO:
+        nivel_riesgo = "ALTO"
+        mensaje = "Alta probabilidad de retraso. Se recomienda prever demoras"
+    elif probabilidad_retraso >= RIESGO_MEDIO:
+        nivel_riesgo = "MEDIO"
+        mensaje = "Probabilidad media de retraso"
+    else:
+        nivel_riesgo = "BAJO"
+        mensaje = "Baja probabilidad de retraso."
 
     return PredictionOutput(
-        airline_code=airline_code,
-        delay_prediction=int(prediction),
-        will_be_delayed=will_be_delayed,
-        delay_probability=delay_probability
+        aerolinea_codigo=aerolinea_codigo,
+        aerolinea_nombre=aerolinea_nombre,
+        retrasado=retrasado,
+        probabilidad_retraso=probabilidad_retraso,
+        nivel_riesgo=nivel_riesgo,
+        mensaje=mensaje
     )
-
-@app.get("/test")
-def test():
-    ejemplo = FlightRequest(
-        aerolinea=AIRLINE_MAP[0]["AIRLINE_CODE"],
-        hora_salida=19,
-        dia_semana=4,
-        distancia_km=350,
-        taxi_out=15,
-        es_finde=0
-    )
-    return predict_delay(ejemplo)
 
 @app.get("/stats")
-def get_stats():
+def get_stats(fecha: str = None): # Agregamos el parámetro opcional
     """
-    Devuelve estadísticas agregadas de las predicciones del día actual
+    Devuelve estadísticas de una fecha específica (formato YYYY-MM-DD)
+    o del día actual si no se envía nada.
     """
-    today = date.today()
+    if fecha:
+        try:
+            target_date = datetime.strptime(fecha, "%Y-%m-%d").date()
+        except ValueError:
+            return {"error": "Formato de fecha inválido. Use YYYY-MM-DD"}
+    else:
+        target_date = date.today()
 
     today_predictions = [
         p for p in PREDICTIONS_HISTORY
-        if p["timestamp"].date() == today
+        if p["timestamp"].date() == target_date
     ]
 
     total = len(today_predictions)
 
     if total == 0:
         return {
-            "fecha": str(today),
+            "fecha": str(target_date),
             "total_vuelos": 0,
             "porcentaje_retrasados": 0.0,
             "porcentaje_puntuales": 0.0
@@ -229,6 +246,16 @@ def get_stats():
         "porcentaje_puntuales": round(on_time / total * 100, 2)
     }
 
+# ========================
+# INFO DEL MODELO
+# ========================
+@app.get("/model/info")
+def model_info():
+    return {
+        "modelo": type(model).__name__,
+        "tiene_predict": hasattr(model, "predict"),
+        "tiene_predict_proba": hasattr(model, "predict_proba")
+    }
 
 # ========================
 # MAIN
@@ -237,7 +264,7 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
         app,
-        host="0.0.0.0",
+        host="127.0.0.1",
         port=5000,
         log_level="info"
     )
