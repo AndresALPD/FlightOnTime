@@ -314,7 +314,7 @@ input[readonly] {
 /* --- Panel de Clima --- */
 .weather-panel {
     position: fixed;
-    /* CORRECCIÓN 1: Movemos el panel a la izquierda para que no choque con los botones */
+    /* Movemos el panel a la izquierda para que no choque con los botones */
     right: 110px;
     width: 320px;
     background: rgba(255, 255, 255, 0.98);
@@ -506,7 +506,7 @@ input[readonly] {
     bottom: 110px; /* Alineado con su botón */
 }
 
-/* --- Estilos del Botón dentro del Panel Grafana (Corrección Hover) --- */
+/* --- Estilos del Botón dentro del Panel Grafana --- */
 .btn-grafana {
     /* Estado Normal */
     background-color: #fff0e6;
