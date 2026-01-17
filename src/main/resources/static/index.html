@@ -74,7 +74,29 @@
     </div>
 </div>
 
+<div id="grafana-button" onclick="toggleGrafana()" title="Ver Dashboard Grafana">
+    <i class="fa-solid fa-chart-line"></i>
+</div>
 
+<div id="grafana-panel" class="weather-panel hidden"> <div class="weather-header" style="background: #F47A20;"> <i class="fa-solid fa-gauge-high"></i>
+    <h3>Métricas en Vivo</h3>
+    <button class="close-panel" onclick="toggleGrafana()">&times;</button>
+</div>
+
+    <div class="weather-body">
+        <p style="font-size: 0.9rem; color: #555; margin-bottom: 15px;">
+            Visualiza el rendimiento de las predicciones y estadísticas del servidor en tiempo real.
+        </p>
+
+        <a href="http://18.231.95.162:3000/public-dashboards/2a2b1a40bad94c39a1b7eb6376e4a8f6"
+           target="_blank"
+           style="text-decoration: none;">
+            <button class="btn-grafana">
+                Abrir Dashboard <i class="fa-solid fa-external-link-alt"></i>
+            </button>
+        </a>
+    </div>
+</div>
 
 <div id="weather-button" onclick="toggleWeather()" title="Consultar Clima">
     <i class="fa-solid fa-cloud-sun"></i>

@@ -151,8 +151,29 @@ function mostrarError(error) {
 }
 
 function toggleWeather() {
-    document.getElementById("weather-panel")
-        .classList.toggle("hidden");
+    const weatherPanel = document.getElementById("weather-panel");
+    const grafanaPanel = document.getElementById("grafana-panel");
+
+    // Lógica UX: Si abro clima, cierro grafana
+    if (weatherPanel.classList.contains("hidden")) {
+        grafanaPanel.classList.add("hidden"); // Cierra Grafana
+        weatherPanel.classList.remove("hidden"); // Abre Clima
+    } else {
+        weatherPanel.classList.add("hidden"); // Cierra Clima
+    }
+}
+
+function toggleGrafana() {
+    const weatherPanel = document.getElementById("weather-panel");
+    const grafanaPanel = document.getElementById("grafana-panel");
+
+    // Lógica UX: Si abro grafana, cierro clima
+    if (grafanaPanel.classList.contains("hidden")) {
+        weatherPanel.classList.add("hidden"); // Cierra Clima
+        grafanaPanel.classList.remove("hidden"); // Abre Grafana
+    } else {
+        grafanaPanel.classList.add("hidden"); // Cierra Grafana
+    }
 }
 
 function consultarClima() {
