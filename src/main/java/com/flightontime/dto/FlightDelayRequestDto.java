@@ -38,6 +38,7 @@ public class FlightDelayRequestDto {
 
     @NotNull(message = "La distancia del vuelo es obligatoria")
     @Min(value = 1, message = "La distancia del vuelo debe ser mayor a 0 km")
+    @Max(value = 15500, message = "La distancia maxima entre dos aeropuertos es 15,500 km")
     private Double distancia_km;
 
     @Min(value = 0, message = "El tiempo de taxi-out no puede ser negativo")

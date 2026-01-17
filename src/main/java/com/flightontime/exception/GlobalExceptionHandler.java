@@ -3,6 +3,7 @@ package com.flightontime.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 
+import java.util.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -39,19 +40,16 @@ public class GlobalExceptionHandler {
         error.setTimestamp(LocalDateTime.now());
         error.setStatus(HttpStatus.BAD_REQUEST.value());
         error.setError("Bad Request");
+        error.setMessage("Errores de validación");
+        error.setPath(request.getRequestURI());
 
-        // Construir mensaje con todos los errores
-        StringBuilder messageBuilder = new StringBuilder();
-        ex.getBindingResult().getFieldErrors().forEach(fieldError -> {
-            messageBuilder
-                    .append(fieldError.getField())
-                    .append(": ")
-                    .append(fieldError.getDefaultMessage())
-                    .append("; ");
+        Map<String, String> fieldErrors = new HashMap<>();
+
+        ex.getBindingResult().getFieldErrors().forEach(err -> {
+            fieldErrors.put(err.getField(), err.getDefaultMessage());
         });
 
-        error.setMessage(messageBuilder.toString());
-        error.setPath(request.getRequestURI());
+        error.setErrors(fieldErrors);
 
         return ResponseEntity.badRequest().body(error);
     }
