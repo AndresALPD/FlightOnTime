@@ -2,95 +2,74 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Predicción de Retraso de Vuelo</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f6f8;
-            padding: 30px;
-        }
-
-        .container {
-            max-width: 500px;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            margin: auto;
-        }
-
-        h2 {
-            text-align: center;
-        }
-
-        label {
-            display: block;
-            margin-top: 15px;
-        }
-
-        input, select, button {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-        }
-
-        button {
-            margin-top: 20px;
-            background-color: #1976d2;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #125aa0;
-        }
-
-        .result {
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 5px;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlightOnTime | Predicción de Retrasos de vuelo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="container">
-    <h2>Predicción de retraso de vuelo ✈️</h2>
+<div class="main-wrapper">
+    <div class="glass-card">
+        <header>
+            <a href="index.html" class="header-link">
+                <div class="icon-header">
+                    <i class="fa-solid fa-plane-departure"></i>
+                </div>
+            </a>
+            <h2>FlightOnTime</h2>
+            <p>Predicción inteligente de retrasos de vuelo</p>
+        </header>
 
-    <label>Aerolínea</label>
-    <select id="aerolinea"></select>
-    <small class="error" id="aerolineaError"></small>
+        <div class="form-grid">
+            <div class="input-group full-width">
+                <label for="aerolinea"><i class="fa-solid fa-building"></i> Aerolínea</label>
+                <select id="aerolinea"></select>
+                <small class="error" id="aerolineaError"></small>
+            </div>
 
-    <label>Origen</label>
-    <select id="origen"></select>
-    <small class="error" id="error-origen"></small>
+            <div class="input-group">
+                <label for="origen"><i class="fa-solid fa-map-pin"></i> Origen</label>
+                <select id="origen"></select>
+                <small class="error" id="error-origen"></small>
+            </div>
 
-    <label>Destino</label>
-    <select id="destino"></select>
-    <small class="error" id="error-destino"></small>
+            <div class="input-group">
+                <label for="destino"><i class="fa-solid fa-location-arrow"></i> Destino</label>
+                <select id="destino"></select>
+                <small class="error" id="error-destino"></small>
+            </div>
 
-    <label>Hora de salida (0-23)</label>
-    <input type="number"
-           id="hora_salida"
-           min="0"
-           max="23"
-           oninput="this.value = this.value.slice(0, 2)">
-    <small class="error" id="error-hora_salida"></small>
+            <div class="input-group">
+                <label for="fecha_salida"><i class="fa-regular fa-calendar"></i> Fecha</label>
+                <input type="date" id="fecha_salida">
+                <small class="error" id="error-fecha_salida"></small>
+            </div>
 
-    <label>Fecha de salida</label>
-    <input type="date" id="fecha_salida">
-    <small class="error" id="error-fecha_salida"></small>
+            <div class="input-group">
+                <label for="hora_salida"><i class="fa-regular fa-clock"></i> Hora (0-23h)</label>
+                <input type="number" id="hora_salida" min="0" max="23" placeholder="Ej: 14">
+                <small class="error" id="error-hora_salida"></small>
+            </div>
 
-    <label>Distancia (km)</label>
-    <input type="number" id="distancia_km" readonly>
+            <div class="input-group technical">
+                <label for="distancia_km">Distancia (km)</label>
+                <input type="number" id="distancia_km" readonly placeholder="Calc...">
+            </div>
 
-    <label>Taxi Out (min)</label>
-    <input type="number" id="taxi_out" readonly>
+            <div class="input-group technical">
+                <label for="taxi_out">Taxi Out (min)</label>
+                <input type="number" id="taxi_out" readonly placeholder="Calc...">
+            </div>
+        </div>
 
-    <button onclick="predecir()">Predecir</button>
+        <button onclick="predecir()" class="btn-predict">
+            Analizar Vuelo <i class="fa-solid fa-bolt"></i>
+        </button>
 
-    <div id="resultado" class="result"></div>
+        <div id="resultado" class="result-container"></div>
+    </div>
 </div>
 
 <script src="app.js"></script>
