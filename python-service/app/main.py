@@ -6,6 +6,12 @@ from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 import joblib
 import os
+from datetime import datetime, date
+
+# ========================
+# HISTORIAL DE PREDICCIONES (MEMORIA)
+# ========================
+PREDICTIONS_HISTORY = []
 
 # ========================
 # RUTAS
@@ -200,6 +206,45 @@ def predict_delay(request: FlightRequest):
         nivel_riesgo=nivel_riesgo,
         mensaje=mensaje
     )
+
+@app.get("/stats")
+def get_stats(fecha: str = None): # Agregamos el parámetro opcional
+    """
+    Devuelve estadísticas de una fecha específica (formato YYYY-MM-DD)
+    o del día actual si no se envía nada.
+    """
+    if fecha:
+        try:
+            target_date = datetime.strptime(fecha, "%Y-%m-%d").date()
+        except ValueError:
+            return {"error": "Formato de fecha inválido. Use YYYY-MM-DD"}
+    else:
+        target_date = date.today()
+
+    today_predictions = [
+        p for p in PREDICTIONS_HISTORY
+        if p["timestamp"].date() == target_date
+    ]
+
+    total = len(today_predictions)
+
+    if total == 0:
+        return {
+            "fecha": str(target_date),
+            "total_vuelos": 0,
+            "porcentaje_retrasados": 0.0,
+            "porcentaje_puntuales": 0.0
+        }
+
+    delayed = sum(1 for p in today_predictions if p["will_be_delayed"])
+    on_time = total - delayed
+
+    return {
+        "fecha": str(today),
+        "total_vuelos": total,
+        "porcentaje_retrasados": round(delayed / total * 100, 2),
+        "porcentaje_puntuales": round(on_time / total * 100, 2)
+    }
 
 # ========================
 # INFO DEL MODELO
