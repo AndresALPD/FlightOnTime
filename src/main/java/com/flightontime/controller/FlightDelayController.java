@@ -33,10 +33,18 @@ public class FlightDelayController {
      * Se puede llamar como: /api/flight-delay/stats?fecha=2026-01-15
      */
     @GetMapping("/stats")
-    public ResponseEntity<FlightDelayStatsResponseDto> getStats(
-            @RequestParam(required = false) String fecha
+    public ResponseEntity<?> getStats( // Cambiado a <?>
+                                       @RequestParam(required = false) String fecha
     ) {
-        // El servicio se encargará de consultar el repositorio de MySQL
+        if (fecha != null && !fecha.isEmpty()) {
+            try {
+                java.time.LocalDate.parse(fecha); // Intenta parsear YYYY-MM-DD
+            } catch (java.time.format.DateTimeParseException e) {
+                // Ahora el compilador aceptará este String de error
+                return ResponseEntity.badRequest().body("Error: Formato de fecha inválido. Use YYYY-MM-DD");
+            }
+        }
+
         FlightDelayStatsResponseDto stats = flightDelayService.getDailyStats(fecha);
         return ResponseEntity.ok(stats);
     }
