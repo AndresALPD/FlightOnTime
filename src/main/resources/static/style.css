@@ -534,3 +534,82 @@ input[readonly] {
     transform: translateY(-2px); /* Pequeña elevación */
     box-shadow: 0 4px 10px rgba(244, 122, 32, 0.3);
 }
+
+/* --- Botón Estadísticas (Posición 3) --- */
+#stats-button {
+    position: fixed;
+    /* 30 (clima) + 80 (grafana) + 80 = 190px */
+    bottom: 190px;
+    right: 30px;
+    background: #673ab7;
+    color: white;
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(103, 58, 183, 0.4);
+    z-index: 1000;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#stats-button:hover {
+    transform: scale(1.1) rotate(-10deg);
+    background: #5e35b1;
+}
+
+/* --- Panel de Estadísticas --- */
+#stats-panel {
+    bottom: 190px; /* Alineado con su burbuja */
+    right: 110px;  /* Aparece a la izquierda de las burbujas */
+}
+
+/* Input de fecha estilizado */
+.stats-input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    margin-top: 5px;
+    font-family: inherit;
+}
+
+/* Botón del panel con efecto Hover */
+.btn-stats {
+    width: 100%;
+    margin-top: 15px;
+    padding: 12px;
+    background: #f3e5f5;
+    color: #673ab7;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-stats:hover {
+    background: #673ab7;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(103, 58, 183, 0.2);
+}
+
+/* Mini tarjeta de resultados de stats */
+.stats-card-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    text-align: left;
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 12px;
+    margin-top: 15px;
+}
