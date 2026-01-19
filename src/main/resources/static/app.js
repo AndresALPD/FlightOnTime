@@ -36,7 +36,7 @@ function predecir() {
         document.querySelectorAll(".error").forEach(e => e.innerText = "");
     }
 
-    fetch("http://localhost:8080/api/flight-delay/predict", {
+    fetch("/api/flight-delay/predict", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -239,7 +239,7 @@ function consultarClima() {
         </div>
     `;
 
-    fetch(`http://localhost:8080/api/weather/by-coordinates?lat=${lat}&lon=${lon}`)
+    fetch(`/api/weather/by-coordinates?lat=${lat}&lon=${lon}`)
         .then(res => res.json())
         .then(data => {
             // Inyectamos una mini tarjeta de datos con iconos de FontAwesome
@@ -289,7 +289,7 @@ inputCity.addEventListener("input", () => {
     }
 
     debounceTimer = setTimeout(() => {
-        fetch(`http://localhost:8080/api/weather/cities?q=${query}`)
+        fetch(`/api/weather/cities?q=${query}`)
             .then(res => res.json())
             .then(data => {
                 suggestions.innerHTML = "";
@@ -316,7 +316,7 @@ function consultarStats() {
 
     resultadoDiv.innerHTML = "Cargando estadísticas... ⏳";
 
-    let url = "http://localhost:8080/api/flight-delay/stats";
+    let url = "/api/flight-delay/stats";
     if (fecha) {
         url += `?fecha=${fecha}`;
     }

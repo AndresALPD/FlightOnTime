@@ -161,7 +161,7 @@
     document.addEventListener("DOMContentLoaded", cargarAerolineas);
 
     async function cargarAerolineas() {
-        const res = await fetch("http://localhost:8080/api/catalogs/airlines");
+        const res = await fetch("/api/catalogs/airlines");
         const data = await res.json();
 
         const select = document.getElementById("aerolinea");
@@ -185,8 +185,7 @@
         const airline = this.value;
         if (!airline) return;
 
-        const res = await fetch(
-            `http://localhost:8080/api/catalogs/origins?airline=${airline}`
+        const res = await fetch(`/api/catalogs/origins?airline=${airline}`
         );
         const data = await res.json();
 
@@ -218,8 +217,7 @@
 
         if (!origin) return;
 
-        const res = await fetch(
-            `http://localhost:8080/api/catalogs/destinations?airline=${airline}&origin=${origin}`
+        const res = await fetch(`/api/catalogs/destinations?airline=${airline}&origin=${origin}`
         );
         const data = await res.json();
 
@@ -250,8 +248,7 @@
 
         if (!dest) return;
 
-        const res = await fetch(
-            `http://localhost:8080/api/catalogs/distance?airline=${airline}&origin=${origin}&dest=${dest}`
+        const res = await fetch(`/api/catalogs/distance?airline=${airline}&origin=${origin}&dest=${dest}`
         );
 
         const data = await res.json();

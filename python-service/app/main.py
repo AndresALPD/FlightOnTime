@@ -16,8 +16,8 @@ PREDICTIONS_HISTORY = []
 # ========================
 # RUTAS
 # ========================
-MODEL_PATH = "app/model/flight_delay_model_backend.pkl"
-CSV_PATH = "app/data/flights_sample_3m.csv"
+MODEL_PATH = "model/flight_delay_model_backend.pkl"
+CSV_PATH = "data/flights_sample_3m.csv"
 
 # ========================
 # VARIABLES GLOBALES

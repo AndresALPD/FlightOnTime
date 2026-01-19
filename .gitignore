@@ -51,3 +51,9 @@ ENV/
 # --- Logs y Temporales ---
 *.log
 hs_err_pid*
+
+# Especifico para el servicio de python
+python-service/app/data/
+python-service/app/model/
+python-service/app/model/*.pkl
+python-service/app/data/*.csv
