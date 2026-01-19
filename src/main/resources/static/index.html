@@ -170,7 +170,7 @@
         data.forEach(a => {
             select.innerHTML += `
             <option value="${a.code}">
-                ${a.code} - ${a.name}
+                <!--${a.code} - --> ${a.name}
             </option>
         `;
         });
@@ -195,7 +195,7 @@
         data.forEach(o => {
             select.innerHTML += `
             <option value="${o.code}">
-                ${o.code} - ${o.city}
+                <!--${o.code} - --> ${o.city}
             </option>
         `;
         });
@@ -227,7 +227,7 @@
         data.forEach(d => {
             select.innerHTML += `
             <option value="${d.code}">
-                ${d.code} - ${d.city}
+                <!-- ${d.code} - --> ${d.city}
             </option>
         `;
         });
