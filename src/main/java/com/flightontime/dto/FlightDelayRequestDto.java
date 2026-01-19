@@ -32,8 +32,8 @@ public class FlightDelayRequestDto {
     private Integer hora_salida;
 
     @NotNull(message = "La fecha de salida del vuelo es obligatorio")
-    @PastOrPresent(message = "La fecha de salida no puede ser mayor a la fecha actual")
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    /*@PastOrPresent(message = "La fecha de salida no puede ser mayor a la fecha actual")
+    @JsonFormat(pattern = "yyyy-MM-dd")*/
     private LocalDate fecha_salida;
 
     @NotNull(message = "La distancia del vuelo es obligatoria")
