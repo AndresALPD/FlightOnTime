@@ -649,3 +649,9 @@ input[readonly] {
     border-radius: 12px;
     margin-top: 15px;
 }
+
+#taxi_out,
+    /* Oculta el label que apunta a ese ID */
+label[for="taxi_out"] {
+    display: none;
+}
