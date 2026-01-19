@@ -8,6 +8,7 @@ import com.flightontime.repository.DestinoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -23,6 +24,7 @@ public class CatalogService {
                         (String) row[0],
                         (String) row[1]
                 ))
+                .sorted(Comparator.comparing(AirlineDto::getName))
                 .toList();
     }
 
@@ -33,6 +35,7 @@ public class CatalogService {
                         (String) row[0],
                         (String) row[1]
                 ))
+                .sorted(Comparator.comparing(OriginDto::getCity))
                 .toList();
     }
 
@@ -43,6 +46,7 @@ public class CatalogService {
                         (String) row[0],
                         (String) row[1]
                 ))
+                .sorted(Comparator.comparing(DestinationDto::getCity))
                 .toList();
     }
 
