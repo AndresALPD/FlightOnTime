@@ -372,4 +372,65 @@ function mostrarStats(data) {
         </div>
     `;
 }
+// Alternar visibilidad del panel
+function toggleBatch() {
+    document.getElementById("batch-panel").classList.toggle("hidden");
+}
+
+async function procesarBatch() {
+    const fileInput = document.getElementById('batchFile');
+    const status = document.getElementById('batch_status');
+
+    if (fileInput.files.length === 0) {
+        status.innerHTML = "<span style='color: red;'>⚠️ Selecciona un archivo CSV</span>";
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    status.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Procesando...";
+    status.style.color = "#2196F3";
+
+    try {
+        // Ajusta la URL si tu API corre en otro puerto o IP
+        const response = await fetch("http://127.0.0.1:5000/predict-batch", {
+            method: "POST",
+            body: formData
+        });
+
+        if (!response.ok) throw new Error("Error en el servidor");
+
+        const data = await response.json();
+
+        // Convertimos los resultados a CSV y descargamos
+        const csvContent = jsonToCsv(data);
+        descargarArchivo(csvContent, "resultados_vuelos.csv");
+
+        status.innerHTML = "<span style='color: green;'>✅ ¡Éxito! Archivo descargado</span>";
+    } catch (error) {
+        status.innerHTML = "<span style='color: red;'>❌ Error: " + error.message + "</span>";
+    }
+}
+
+// Utilidad para convertir el JSON de la API a CSV descargable
+function jsonToCsv(items) {
+    const header = Object.keys(items[0]);
+    const csv = [
+        header.join(','),
+        ...items.map(row => header.map(fieldName => JSON.stringify(row[fieldName])).join(','))
+    ].join('\r\n');
+    return csv;
+}
+
+function descargarArchivo(content, fileName) {
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
 

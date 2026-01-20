@@ -655,3 +655,72 @@ input[readonly] {
 label[for="taxi_out"] {
     display: none;
 }
+
+/* --- Botón Batch (Posición 4) --- */
+#batch-button {
+    position: fixed;
+    /* 30 (clima) + 80 (grafana) + 80 (stats) + 80 = 270px */
+    bottom: 270px;
+    right: 30px;
+    background: #009688; /* Color verde azulado elegante */
+    color: white;
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(0, 150, 136, 0.4);
+    z-index: 1000;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#batch-button:hover {
+    transform: scale(1.1) rotate(10deg);
+    background: #00796b;
+}
+
+/* --- Panel de Batch --- */
+#batch-panel {
+    bottom: 270px; /* Alineado con su burbuja */
+    right: 110px;
+}
+
+/* Estilo para el input de archivo dentro del panel */
+.batch-file-input {
+    width: 100%;
+    padding: 10px;
+    border: 2px dashed #009688; /* Estilo dashed para indicar carga */
+    border-radius: 8px;
+    margin-top: 5px;
+    background: #f0fdfa;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+/* Botón del panel Batch */
+.btn-batch-action {
+    width: 100%;
+    margin-top: 15px;
+    padding: 12px;
+    background: #e0f2f1;
+    color: #00796b;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-batch-action:hover {
+    background: #009688;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 150, 136, 0.2);
+}
