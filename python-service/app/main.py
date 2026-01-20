@@ -7,6 +7,9 @@ import pandas as pd
 import joblib
 import os
 from datetime import datetime, date
+from typing import List
+from fastapi import UploadFile, File
+import io
 
 # ========================
 # HISTORIAL DE PREDICCIONES (MEMORIA)
@@ -206,6 +209,84 @@ def predict_delay(request: FlightRequest):
         nivel_riesgo=nivel_riesgo,
         mensaje=mensaje
     )
+
+
+@app.post("/predict-batch", response_model=List[PredictionOutput])
+async def predict_batch(file: UploadFile = File(...)):
+    print(f"\n--- 📥 Nueva petición Batch: {file.filename} ---")
+
+    if not file.filename.endswith('.csv'):
+        raise HTTPException(status_code=400, detail="No es un CSV")
+
+    try:
+        # Leer archivo
+        contents = await file.read()
+        df_input = pd.read_csv(io.BytesIO(contents))
+        print(f"✅ CSV leido. Filas: {len(df_input)}")
+
+        # Definir mapeo
+        mapping = {
+            "aerolinea": "AIRLINE",
+            "hora_salida": "DEP_HOUR",
+            "dia_semana": "DAY_OF_WEEK",
+            "distancia_km": "DISTANCE",
+            "taxi_out": "TAXI_OUT",
+            "es_finde": "IS_WEEKEND"
+        }
+
+        # VALIDACIÓN MANUAL DE COLUMNAS
+        for col in mapping.keys():
+            if col not in df_input.columns:
+                print(f"❌ ERROR: Falta columna '{col}'")
+                raise HTTPException(status_code=400, detail=f"Falta columna: {col}")
+
+        # Preparar DataFrame para el modelo
+        df_model = df_input[list(mapping.keys())].rename(columns=mapping)
+        df_model["AIRLINE"] = df_model["AIRLINE"].str.upper().str.strip()
+        print("✅ Columnas mapeadas y limpias")
+
+        # INFERENCIA
+        print("🧠 Iniciando predicción con el modelo...")
+        preds = model.predict(df_model)
+
+        if hasattr(model, "predict_proba"):
+            probs = model.predict_proba(df_model)[:, 1]
+        else:
+            probs = [0.0] * len(preds)
+        print("✅ Predicción completada")
+
+        # Formatear respuesta
+        results = []
+        for i in range(len(df_model)):
+            codigo = df_model.iloc[i]["AIRLINE"]
+            prob = round(float(probs[i]) * 100, 2)
+
+            # Lógica de riesgo
+            riesgo = "ALTO" if prob >= 70 else ("MEDIO" if prob >= 40 else "BAJO")
+            mensaje = "Probabilidad de retraso " + riesgo.lower()
+
+            results.append(PredictionOutput(
+                aerolinea_codigo=codigo,
+                aerolinea_nombre=AIRLINE_NAME_BY_CODE.get(codigo, "Desconocida"),
+                retrasado="SI" if int(preds[i]) == 1 else "NO",
+                probabilidad_retraso=prob,
+                nivel_riesgo=riesgo,
+                mensaje=mensaje
+            ))
+
+        print(f"🚀 Enviando {len(results)} resultados")
+        return results
+
+    except Exception as e:
+            import traceback
+            # Esto forzará a que el error aparezca en la terminal negra de Uvicorn
+            print("\n" + "="*50)
+            print("❌ ERROR DETECTADO:")
+            print(traceback.format_exc())
+            print("="*50 + "\n")
+
+            # Esto enviará el detalle al script batch.py
+            raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/stats")
 def get_stats(fecha: str = None): # Agregamos el parámetro opcional
