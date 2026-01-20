@@ -255,6 +255,22 @@ input[readonly] {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+.history-container {
+    margin-top: 30px;
+    padding-top: 15px;
+    border-top: 1px dashed #ddd;
+    display: none;
+}
+
+.history-item {
+    background: #fafafa;
+    border-left: 4px solid #ccc;
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+}
+
+
 /* Media Query para móviles */
 @media (max-width: 550px) {
     .form-grid {

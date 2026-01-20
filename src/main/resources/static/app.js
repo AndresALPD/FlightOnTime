@@ -1,3 +1,107 @@
+/**************************************************
+ * CARGA INICIAL
+ **************************************************/
+document.addEventListener("DOMContentLoaded", () => {
+    cargarAerolineas();
+    renderizarHistorial();
+
+    document.getElementById("aerolinea")
+        .addEventListener("change", cargarOrigenes);
+
+    document.getElementById("origen")
+        .addEventListener("change", cargarDestinos);
+
+    document.getElementById("destino")
+        .addEventListener("change", cargarDistancia);
+});
+
+/**************************************************
+ * CATÁLOGOS DE VUELOS
+ **************************************************/
+async function cargarAerolineas() {
+    const res = await fetch("http://localhost:8080/api/catalogs/airlines");
+    const data = await res.json();
+
+    const select = document.getElementById("aerolinea");
+    select.innerHTML = `<option value="">Seleccione aerolínea</option>`;
+
+    data.forEach(a => {
+        select.innerHTML += `
+            <option value="${a.code}">
+                ${a.code} - ${a.name}
+            </option>
+        `;
+    });
+}
+
+async function cargarOrigenes() {
+    const airline = this.value;
+    if (!airline) return;
+
+    const res = await fetch(
+        `http://localhost:8080/api/catalogs/origins?airline=${airline}`
+    );
+    const data = await res.json();
+
+    const select = document.getElementById("origen");
+    select.innerHTML = `<option value="">Seleccione origen</option>`;
+
+    data.forEach(o => {
+        select.innerHTML += `
+            <option value="${o.code}">
+                ${o.code} - ${o.city}
+            </option>
+        `;
+    });
+
+    // Reset dependientes
+    document.getElementById("destino").innerHTML =
+        `<option value="">Seleccione destino</option>`;
+    document.getElementById("distancia_km").value = "";
+    document.getElementById("taxi_out").value = "";
+}
+
+async function cargarDestinos() {
+    const airline = document.getElementById("aerolinea").value;
+    const origin = this.value;
+    if (!origin) return;
+
+    const res = await fetch(
+        `http://localhost:8080/api/catalogs/destinations?airline=${airline}&origin=${origin}`
+    );
+    const data = await res.json();
+
+    const select = document.getElementById("destino");
+    select.innerHTML = `<option value="">Seleccione destino</option>`;
+
+    data.forEach(d => {
+        select.innerHTML += `
+            <option value="${d.code}">
+                ${d.code} - ${d.city}
+            </option>
+        `;
+    });
+
+    document.getElementById("distancia_km").value = "";
+    document.getElementById("taxi_out").value = "";
+}
+
+async function cargarDistancia() {
+    const airline = document.getElementById("aerolinea").value;
+    const origin = document.getElementById("origen").value;
+    const dest = this.value;
+    if (!dest) return;
+
+    const res = await fetch(
+        `http://localhost:8080/api/catalogs/distance?airline=${airline}&origin=${origin}&dest=${dest}`
+    );
+
+    const data = await res.json();
+
+    document.getElementById("distancia_km").value = data.distance;
+    document.getElementById("taxi_out").value = data.taxi_out;
+}
+
 function predecir() {
 
     limpiarErrores();
@@ -119,6 +223,13 @@ function mostrarResultado(data) {
 
     // Aseguramos que se vea
     resultadoDiv.classList.add("result-visible");
+
+// 👇 Muestra el historial SOLO tras la primera predicción
+    const historialDiv = document.getElementById("historial");
+    historialDiv.classList.remove("hidden");
+
+    guardarEnHistorial(data);
+    renderizarHistorial();
 }
 
 function mostrarError(error) {
@@ -263,4 +374,51 @@ inputCity.addEventListener("input", () => {
     }, 300);
 });
 
+/**************************************************
+ * HISTORIAL DE CONSULTAS (sessionStorage)
+ **************************************************/
+function guardarEnHistorial(data) {
+    const historial = JSON.parse(sessionStorage.getItem("historialVuelos")) || [];
+
+    historial.unshift({
+        fecha: new Date().toLocaleString(),
+        aerolinea: data.aerolinea_codigo,
+        origen: data.origen,
+        destino: data.destino,
+        riesgo: data.nivel_riesgo,
+        probabilidad: data.probabilidad_retraso
+    });
+
+    // Limita a últimas 5 consultas (opcional)
+    historial.splice(5);
+
+    sessionStorage.setItem("historialVuelos", JSON.stringify(historial));
+}
+
+function renderizarHistorial() {
+    const contenedor = document.getElementById("historial-lista");
+    if (!contenedor) return;
+
+    const historial = JSON.parse(sessionStorage.getItem("historialVuelos")) || [];
+
+    if (historial.length === 0) {
+        contenedor.innerHTML = `<p style="color:#888;">Sin consultas aún</p>`;
+        return;
+    }
+
+    contenedor.innerHTML = "";
+
+    historial.forEach(h => {
+        contenedor.innerHTML += `
+            <div class="history-item">
+                <div>
+                    <strong>${h.aerolinea}</strong> ${h.origen} → ${h.destino}
+                </div>
+                <div style="font-size:0.85rem; color:#666;">
+                    ${h.fecha} · Riesgo ${h.riesgo} (${h.probabilidad}%)
+                </div>
+            </div>
+        `;
+    });
+}
 
