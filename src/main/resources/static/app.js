@@ -104,6 +104,14 @@ async function cargarDistancia() {
 
 function predecir() {
 
+    const btn = document.getElementById("btnPredict");
+
+    // Si ya está deshabilitado, no hace nada
+    if (btn.disabled) return;
+
+    // Bloqueamos el botón
+    btn.disabled = true;
+
     limpiarErrores();
 
     const resultadoDiv = document.getElementById("resultado");
@@ -154,6 +162,23 @@ function predecir() {
             mostrarError(error);
         });
 }
+
+document.querySelectorAll(
+    "#aerolinea, #origen, #destino, #hora_salida, #fecha_salida, #distancia_km, #taxi_out"
+).forEach(el => {
+    el.addEventListener("change", habilitarBotonPrediccion);
+    el.addEventListener("input", habilitarBotonPrediccion);
+});
+
+function habilitarBotonPrediccion() {
+    const btn = document.getElementById("btnPredict");
+
+    btn.disabled = false;
+    btn.innerHTML = `
+        Analizar Vuelo <i class="fa-solid fa-bolt"></i>
+    `;
+}
+
 
 function mostrarResultado(data) {
 
@@ -264,26 +289,48 @@ function mostrarError(error) {
 function toggleWeather() {
     const weatherPanel = document.getElementById("weather-panel");
     const grafanaPanel = document.getElementById("grafana-panel");
+    const statsPanel = document.getElementById("stats-panel");
 
-    // Lógica UX: Si abro clima, cierro grafana
     if (weatherPanel.classList.contains("hidden")) {
-        grafanaPanel.classList.add("hidden"); // Cierra Grafana
-        weatherPanel.classList.remove("hidden"); // Abre Clima
+        // Cerramos los otros dos
+        grafanaPanel.classList.add("hidden");
+        statsPanel.classList.add("hidden");
+        // Abrimos clima
+        weatherPanel.classList.remove("hidden");
     } else {
-        weatherPanel.classList.add("hidden"); // Cierra Clima
+        weatherPanel.classList.add("hidden");
     }
 }
 
 function toggleGrafana() {
     const weatherPanel = document.getElementById("weather-panel");
     const grafanaPanel = document.getElementById("grafana-panel");
+    const statsPanel = document.getElementById("stats-panel");
 
-    // Lógica UX: Si abro grafana, cierro clima
     if (grafanaPanel.classList.contains("hidden")) {
-        weatherPanel.classList.add("hidden"); // Cierra Clima
-        grafanaPanel.classList.remove("hidden"); // Abre Grafana
+        // Cerramos los otros dos
+        weatherPanel.classList.add("hidden");
+        statsPanel.classList.add("hidden");
+        // Abrimos grafana
+        grafanaPanel.classList.remove("hidden");
     } else {
-        grafanaPanel.classList.add("hidden"); // Cierra Grafana
+        grafanaPanel.classList.add("hidden");
+    }
+}
+
+function toggleStats() {
+    const weatherPanel = document.getElementById("weather-panel");
+    const grafanaPanel = document.getElementById("grafana-panel");
+    const statsPanel = document.getElementById("stats-panel");
+
+    if (statsPanel.classList.contains("hidden")) {
+        // Cerramos los otros dos
+        weatherPanel.classList.add("hidden");
+        grafanaPanel.classList.add("hidden");
+        // Abrimos estadísticas
+        statsPanel.classList.remove("hidden");
+    } else {
+        statsPanel.classList.add("hidden");
     }
 }
 
@@ -374,6 +421,69 @@ inputCity.addEventListener("input", () => {
     }, 300);
 });
 
+function consultarStats() {
+    const fecha = document.getElementById("stats_fecha").value;
+    const resultadoDiv = document.getElementById("stats_resultado");
+
+    resultadoDiv.innerHTML = "Cargando estadísticas... ⏳";
+
+    let url = "http://localhost:8080/api/flight-delay/stats";
+    if (fecha) {
+        url += `?fecha=${fecha}`;
+    }
+
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(err => {
+                    throw new Error(err);
+                });
+            }
+            return response.json();
+        })
+        .then(data => mostrarStats(data))
+        .catch(error => {
+            resultadoDiv.innerHTML = `
+                <p style="color:red;">
+                    ${error.message}
+                </p>
+            `;
+        });
+}
+
+function mostrarStats(data) {
+    const resultadoDiv = document.getElementById("stats_resultado");
+
+    if (data.totalVuelos === 0) {
+        resultadoDiv.innerHTML = `
+            <div class="stats-card-grid" style="text-align:center;">
+                <i class="fa-solid fa-calendar-xmark" style="font-size: 2rem; color: #ccc;"></i>
+                <p style="margin-top:10px;">No hay registros para el ${data.fecha}</p>
+            </div>
+        `;
+        return;
+    }
+
+    resultadoDiv.innerHTML = `
+        <div class="stats-card-grid">
+            <div style="border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 5px; font-weight: 600; color: #673ab7;">
+                <i class="fa-solid fa-calendar-day"></i> Reporte: ${data.fecha}
+            </div>
+            <p><i class="fa-solid fa-plane"></i> Total vuelos: <strong>${data.totalVuelos}</strong></p>
+
+            <p style="color: #d32f2f;">
+                <i class="fa-solid fa-clock"></i> Retrasados:
+                <strong>${data.vuelosRetrasados} (${data.porcentajeRetrasados}%)</strong>
+            </p>
+
+            <p style="color: #2e7d32;">
+                <i class="fa-solid fa-check-circle"></i> A tiempo:
+                <strong>${data.vuelosATiempo} (${data.porcentajePuntuales}%)</strong>
+            </p>
+        </div>
+    `;
+}
+
 /**************************************************
  * HISTORIAL DE CONSULTAS (sessionStorage)
  **************************************************/
@@ -421,4 +531,3 @@ function renderizarHistorial() {
         `;
     });
 }
-

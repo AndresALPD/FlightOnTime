@@ -66,7 +66,7 @@
             </div>
         </div>
 
-        <button onclick="predecir()" class="btn-predict">
+        <button id="btnPredict" onclick="predecir()" class="btn-predict">
             Analizar Vuelo <i class="fa-solid fa-bolt"></i>
         </button>
 
@@ -75,6 +75,31 @@
     <div id="historial" class="history-container hidden">
         <h3><i class="fa-solid fa-clock-rotate-left"></i> Historial de consultas</h3>
         <div id="historial-lista"></div>
+    </div>
+</div>
+
+<div id="stats-button" class="floating-bubble" onclick="toggleStats()" title="Estadísticas Diarias">
+    <i class="fa-solid fa-chart-bar"></i>
+</div>
+
+<div id="stats-panel" class="weather-panel hidden">
+    <div class="weather-header" style="background: #673ab7;"> <i class="fa-solid fa-square-poll-vertical"></i>
+        <h3>Reporte Diario</h3>
+        <button class="close-panel" onclick="toggleStats()">&times;</button>
+    </div>
+
+    <div class="weather-body">
+        <div class="input-wrapper">
+            <label for="stats_fecha">Fecha de consulta</label>
+            <input type="date" id="stats_fecha" class="stats-input">
+        </div>
+
+        <button onclick="consultarStats()" class="btn-stats">
+            Generar Reporte <i class="fa-solid fa-chart-line"></i>
+        </button>
+
+        <div id="stats_resultado" class="weather-result-display">
+        </div>
     </div>
 </div>
 
