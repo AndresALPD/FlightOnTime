@@ -394,7 +394,7 @@ async function procesarBatch() {
 
     try {
         // Ajusta la URL si tu API corre en otro puerto o IP
-        const response = await fetch("http://127.0.0.1:5000/predict-batch", {
+        const response = await fetch("http://56.125.109.176:5000/predict-batch", {
             method: "POST",
             body: formData
         });
