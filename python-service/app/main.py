@@ -1,118 +1,77 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from pydantic import BaseModel, Field
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
-
 import pandas as pd
 import joblib
 import os
+import io
 from datetime import datetime, date
 from typing import List
-from fastapi import UploadFile, File
-import io
-
-# ========================
-# HISTORIAL DE PREDICCIONES (MEMORIA)
-# ========================
-PREDICTIONS_HISTORY = []
-
-# ========================
-# RUTAS
-# ========================
-MODEL_PATH = "model/flight_delay_model_backend.pkl"
-CSV_PATH = "data/flights_sample_3m.csv"
 
 # ========================
 # VARIABLES GLOBALES
 # ========================
+MODEL_PATH = "model/flight_delay_model_backend.pkl"
+CSV_PATH = "data/flights_sample_3m.csv"
+
 model = None
 AEROLINEAS_VALIDAS = set()
 AIRLINE_MAP = []
 AIRLINE_NAME_BY_CODE = {}
 
 # ========================
-# LIFESPAN
+# LIFESPAN (Carga de recursos al iniciar)
 # ========================
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global model, AEROLINEAS_VALIDAS, AIRLINE_MAP, AIRLINE_NAME_BY_CODE
-
     print("🚀 Iniciando FlightOnTime API")
 
-    # ---------
-    # Cargar modelo
-    # ---------
+    # 1. Cargar Modelo
     if not os.path.exists(MODEL_PATH):
-        raise RuntimeError(f"❌ Modelo no encontrado: {MODEL_PATH}")
+        print(f"❌ Error: No se encuentra el modelo en {MODEL_PATH}")
+        raise RuntimeError("Modelo no encontrado")
 
     loaded = joblib.load(MODEL_PATH)
-
-    if isinstance(loaded, dict):
-        for value in loaded.values():
-            if hasattr(value, "predict"):
-                model = value
-                break
-        if model is None:
-            raise RuntimeError("❌ No se encontró un modelo válido en el PKL")
-    else:
-        model = loaded
-
+    # Si el pkl es un diccionario, buscamos el objeto del modelo
+    model = loaded.get("model") if isinstance(loaded, dict) else loaded
     print(f"🧠 Modelo cargado: {type(model).__name__}")
 
-    # ---------
-    # Cargar CSV de aerolíneas
-    # ---------
+    # 2. Cargar Aerolíneas desde CSV
     if not os.path.exists(CSV_PATH):
-        raise RuntimeError(f"❌ CSV no encontrado: {CSV_PATH}")
+        print(f"❌ Error: No se encuentra el CSV en {CSV_PATH}")
+        raise RuntimeError("CSV de referencia no encontrado")
 
-    df = (
-        pd.read_csv(
-            CSV_PATH,
-            usecols=["AIRLINE_CODE", "AIRLINE"],
-            dtype=str
-        )
-        .dropna()
-        .drop_duplicates()
-    )
+    df_ref = pd.read_csv(CSV_PATH, usecols=["AIRLINE_CODE", "AIRLINE"], dtype=str).dropna().drop_duplicates()
 
-    AEROLINEAS_VALIDAS = set(df["AIRLINE_CODE"].unique())
+    # Normalización para comparaciones seguras
+    AEROLINEAS_VALIDAS = set(df_ref["AIRLINE_CODE"].str.upper().str.strip().unique())
+    AIRLINE_MAP = df_ref.sort_values("AIRLINE").to_dict(orient="records")
+    AIRLINE_NAME_BY_CODE = {row["AIRLINE_CODE"]: row["AIRLINE"] for row in AIRLINE_MAP}
 
-    AIRLINE_MAP = (
-        df[["AIRLINE_CODE", "AIRLINE"]]
-        .sort_values("AIRLINE")
-        .to_dict(orient="records")
-    )
-
-    AIRLINE_NAME_BY_CODE = {
-        row["AIRLINE_CODE"]: row["AIRLINE"]
-        for row in AIRLINE_MAP
-    }
-
-    print(f"✈️ Aerolíneas cargadas: {len(AEROLINEAS_VALIDAS)}")
+    print(f"✈️ {len(AEROLINEAS_VALIDAS)} aerolíneas cargadas correctamente")
     yield
 
-
 # ========================
-# APP
+# CONFIGURACIÓN APP
 # ========================
 app = FastAPI(
     title="FlightOnTime API",
-    description="Predicción de retrasos de vuelos",
-    version="1.2.0",
     lifespan=lifespan
 )
 
+# CORS corregido para evitar "Failed to fetch"
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080"],
+    allow_origins=["*"], # En desarrollo permitimos todo; en producción usa ["http://localhost:8080"]
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
 # ========================
-# SCHEMA DE ENTRADA
+# SCHEMAS
 # ========================
 class FlightRequest(BaseModel):
     aerolinea: str = Field(..., min_length=2, max_length=3)
@@ -122,9 +81,6 @@ class FlightRequest(BaseModel):
     taxi_out: float = Field(15, ge=0)
     es_finde: int = Field(0, ge=0, le=1)
 
-# ========================
-# SCHEMA DE SALIDA (NORMALIZADO)
-# ========================
 class PredictionOutput(BaseModel):
     aerolinea_codigo: str
     aerolinea_nombre: str
@@ -136,23 +92,17 @@ class PredictionOutput(BaseModel):
 # ========================
 # ENDPOINTS
 # ========================
+
 @app.get("/airlines")
 def listar_aerolineas():
-    """Lista aerolíneas soportadas"""
     return AIRLINE_MAP
-
 
 @app.post("/predict", response_model=PredictionOutput)
 def predict_delay(request: FlightRequest):
+    cod = request.aerolinea.upper().strip()
 
-    aerolinea_codigo = request.aerolinea.upper()
-
-
-    if aerolinea_codigo not in AEROLINEAS_VALIDAS:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Aerolínea no soportada: {aerolinea_codigo}"
-        )
+    if cod not in AEROLINEAS_VALIDAS:
+        raise HTTPException(status_code=400, detail=f"Aerolínea {cod} no soportada por el modelo")
 
     input_df = pd.DataFrame([{
         "DEP_HOUR": request.hora_salida,
@@ -160,192 +110,90 @@ def predict_delay(request: FlightRequest):
         "IS_WEEKEND": request.es_finde,
         "DISTANCE": request.distancia_km,
         "TAXI_OUT": request.taxi_out,
-        "AIRLINE": aerolinea_codigo
+        "AIRLINE": cod
     }])
 
-    try:
-        aerolinea_nombre = AIRLINE_NAME_BY_CODE.get(aerolinea_codigo, "Desconocida")
-        prediccion = int(model.predict(input_df)[0])
+    prob = round(float(model.predict_proba(input_df)[0][1]) * 100, 2) if hasattr(model, "predict_proba") else 0.0
+    pred = int(model.predict(input_df)[0])
 
-        if hasattr(model, "predict_proba"):
-            probabilidad_retraso = round(
-                float(model.predict_proba(input_df)[0][1]) * 100, 2
-            )
-        else:
-            probabilidad_retraso = 0.0
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error interno al predecir: {str(e)}"
-        )
-
-    retrasado = "SI" if prediccion == 1 else "NO"
-
-
-    # ========================
-    # INTERPRETACIÓN
-    # ========================
-
-    RIESGO_ALTO = 70
-    RIESGO_MEDIO = 40
-
-
-    if probabilidad_retraso >= RIESGO_ALTO:
-        nivel_riesgo = "ALTO"
-        mensaje = "Alta probabilidad de retraso. Se recomienda prever demoras"
-    elif probabilidad_retraso >= RIESGO_MEDIO:
-        nivel_riesgo = "MEDIO"
-        mensaje = "Probabilidad media de retraso"
-    else:
-        nivel_riesgo = "BAJO"
-        mensaje = "Baja probabilidad de retraso."
+    riesgo = "ALTO" if prob >= 70 else ("MEDIO" if prob >= 40 else "BAJO")
 
     return PredictionOutput(
-        aerolinea_codigo=aerolinea_codigo,
-        aerolinea_nombre=aerolinea_nombre,
-        retrasado=retrasado,
-        probabilidad_retraso=probabilidad_retraso,
-        nivel_riesgo=nivel_riesgo,
-        mensaje=mensaje
+        aerolinea_codigo=cod,
+        aerolinea_nombre=AIRLINE_NAME_BY_CODE.get(cod, "Desconocida"),
+        retrasado="SI" if pred == 1 else "NO",
+        probabilidad_retraso=prob,
+        nivel_riesgo=riesgo,
+        mensaje=f"Probabilidad de retraso {riesgo.lower()}"
     )
-
 
 @app.post("/predict-batch", response_model=List[PredictionOutput])
 async def predict_batch(file: UploadFile = File(...)):
-    print(f"\n--- 📥 Nueva petición Batch: {file.filename} ---")
-
     if not file.filename.endswith('.csv'):
-        raise HTTPException(status_code=400, detail="No es un CSV")
+        raise HTTPException(status_code=400, detail="El archivo debe ser un CSV")
 
     try:
-        # Leer archivo
         contents = await file.read()
         df_input = pd.read_csv(io.BytesIO(contents))
-        print(f"✅ CSV leido. Filas: {len(df_input)}")
 
-        # Definir mapeo
         mapping = {
-            "aerolinea": "AIRLINE",
-            "hora_salida": "DEP_HOUR",
-            "dia_semana": "DAY_OF_WEEK",
-            "distancia_km": "DISTANCE",
-            "taxi_out": "TAXI_OUT",
-            "es_finde": "IS_WEEKEND"
+            "aerolinea": "AIRLINE", "hora_salida": "DEP_HOUR",
+            "dia_semana": "DAY_OF_WEEK", "distancia_km": "DISTANCE",
+            "taxi_out": "TAXI_OUT", "es_finde": "IS_WEEKEND"
         }
 
-        # VALIDACIÓN MANUAL DE COLUMNAS
+        # Validar columnas necesarias
         for col in mapping.keys():
             if col not in df_input.columns:
-                print(f"❌ ERROR: Falta columna '{col}'")
-                raise HTTPException(status_code=400, detail=f"Falta columna: {col}")
+                raise HTTPException(status_code=400, detail=f"Falta la columna requerida: {col}")
 
-        # Preparar DataFrame para el modelo
+        # Preparación y normalización
         df_model = df_input[list(mapping.keys())].rename(columns=mapping)
-        df_model["AIRLINE"] = df_model["AIRLINE"].str.upper().str.strip()
-        print("✅ Columnas mapeadas y limpias")
+        df_model["AIRLINE"] = df_model["AIRLINE"].astype(str).str.upper().str.strip()
 
-        # INFERENCIA
-        print("🧠 Iniciando predicción con el modelo...")
-        preds = model.predict(df_model)
+        # Separar registros válidos de desconocidos
+        mask_validas = df_model["AIRLINE"].isin(AEROLINEAS_VALIDAS)
+        preds_final = [0] * len(df_model)
+        probs_final = [0.0] * len(df_model)
 
-        if hasattr(model, "predict_proba"):
-            probs = model.predict_proba(df_model)[:, 1]
-        else:
-            probs = [0.0] * len(preds)
-        print("✅ Predicción completada")
+        if mask_validas.any():
+            df_validas = df_model[mask_validas]
+            preds_final_validas = model.predict(df_validas)
+            probs_final_validas = model.predict_proba(df_validas)[:, 1] if hasattr(model, "predict_proba") else [0.0] * len(preds_final_validas)
 
-        # Formatear respuesta
-        results = []
+            # Mapear resultados a sus índices originales
+            indices = df_model.index[mask_validas].tolist()
+            for i, idx in enumerate(indices):
+                preds_final[idx] = preds_final_validas[i]
+                probs_final[idx] = probs_final_validas[i]
+
+        # Construir lista de salida
+        res = []
         for i in range(len(df_model)):
-            codigo = df_model.iloc[i]["AIRLINE"]
-            prob = round(float(probs[i]) * 100, 2)
-
-            # Lógica de riesgo
-            riesgo = "ALTO" if prob >= 70 else ("MEDIO" if prob >= 40 else "BAJO")
-            mensaje = "Probabilidad de retraso " + riesgo.lower()
-
-            results.append(PredictionOutput(
-                aerolinea_codigo=codigo,
-                aerolinea_nombre=AIRLINE_NAME_BY_CODE.get(codigo, "Desconocida"),
-                retrasado="SI" if int(preds[i]) == 1 else "NO",
-                probabilidad_retraso=prob,
-                nivel_riesgo=riesgo,
-                mensaje=mensaje
-            ))
-
-        print(f"🚀 Enviando {len(results)} resultados")
-        return results
+            cod = df_model.iloc[i]["AIRLINE"]
+            if not mask_validas.iloc[i]:
+                res.append(PredictionOutput(
+                    aerolinea_codigo=cod, aerolinea_nombre="Aerolinea desconocida",
+                    retrasado="N/A", probabilidad_retraso=0.0,
+                    nivel_riesgo="DESCONOCIDO", mensaje="Aerolinea no soportada por el modelo"
+                ))
+            else:
+                p_val = round(float(probs_final[i]) * 100, 2)
+                r_val = "ALTO" if p_val >= 70 else ("MEDIO" if p_val >= 40 else "BAJO")
+                res.append(PredictionOutput(
+                    aerolinea_codigo=cod, aerolinea_nombre=AIRLINE_NAME_BY_CODE.get(cod, "Desconocida"),
+                    retrasado="SI" if int(preds_final[i]) == 1 else "NO",
+                    probabilidad_retraso=p_val, nivel_riesgo=r_val, mensaje=f"Probabilidad {r_val.lower()}"
+                ))
+        return res
 
     except Exception as e:
-            import traceback
-            # Esto forzará a que el error aparezca en la terminal negra de Uvicorn
-            print("\n" + "="*50)
-            print("❌ ERROR DETECTADO:")
-            print(traceback.format_exc())
-            print("="*50 + "\n")
-
-            # Esto enviará el detalle al script batch.py
-            raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/stats")
-def get_stats(fecha: str = None): # Agregamos el parámetro opcional
-    """
-    Devuelve estadísticas de una fecha específica (formato YYYY-MM-DD)
-    o del día actual si no se envía nada.
-    """
-    if fecha:
-        try:
-            target_date = datetime.strptime(fecha, "%Y-%m-%d").date()
-        except ValueError:
-            return {"error": "Formato de fecha inválido. Use YYYY-MM-DD"}
-    else:
-        target_date = date.today()
-
-    today_predictions = [
-        p for p in PREDICTIONS_HISTORY
-        if p["timestamp"].date() == target_date
-    ]
-
-    total = len(today_predictions)
-
-    if total == 0:
-        return {
-            "fecha": str(target_date),
-            "total_vuelos": 0,
-            "porcentaje_retrasados": 0.0,
-            "porcentaje_puntuales": 0.0
-        }
-
-    delayed = sum(1 for p in today_predictions if p["will_be_delayed"])
-    on_time = total - delayed
-
-    return {
-        "fecha": str(today),
-        "total_vuelos": total,
-        "porcentaje_retrasados": round(delayed / total * 100, 2),
-        "porcentaje_puntuales": round(on_time / total * 100, 2)
-    }
-
-# ========================
-# INFO DEL MODELO
-# ========================
-@app.get("/model/info")
-def model_info():
-    return {
-        "modelo": type(model).__name__,
-        "tiene_predict": hasattr(model, "predict"),
-        "tiene_predict_proba": hasattr(model, "predict_proba")
-    }
+        print(f"❌ Error en Batch: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al procesar el lote: {str(e)}")
 
 # ========================
 # MAIN
 # ========================
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(
-        app,
-        host="127.0.0.1",
-        port=5000,
-        log_level="info"
-    )
+    uvicorn.run(app, host="127.0.0.1", port=5000)

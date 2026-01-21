@@ -176,12 +176,14 @@ function mostrarError(error) {
 }
 
 function toggleWeather() {
+    const batchPanel = document.getElementById("batch-panel");
     const weatherPanel = document.getElementById("weather-panel");
     const grafanaPanel = document.getElementById("grafana-panel");
     const statsPanel = document.getElementById("stats-panel");
 
     if (weatherPanel.classList.contains("hidden")) {
         // Cerramos los otros dos
+        batchPanel.classList.add("hidden");
         grafanaPanel.classList.add("hidden");
         statsPanel.classList.add("hidden");
         // Abrimos clima
@@ -192,12 +194,14 @@ function toggleWeather() {
 }
 
 function toggleGrafana() {
+    const batchPanel = document.getElementById("batch-panel");
     const weatherPanel = document.getElementById("weather-panel");
     const grafanaPanel = document.getElementById("grafana-panel");
     const statsPanel = document.getElementById("stats-panel");
 
     if (grafanaPanel.classList.contains("hidden")) {
         // Cerramos los otros dos
+        batchPanel.classList.add("hidden");
         weatherPanel.classList.add("hidden");
         statsPanel.classList.add("hidden");
         // Abrimos grafana
@@ -208,18 +212,38 @@ function toggleGrafana() {
 }
 
 function toggleStats() {
+    const batchPanel = document.getElementById("batch-panel");
     const weatherPanel = document.getElementById("weather-panel");
     const grafanaPanel = document.getElementById("grafana-panel");
     const statsPanel = document.getElementById("stats-panel");
 
     if (statsPanel.classList.contains("hidden")) {
         // Cerramos los otros dos
+        batchPanel.classList.add("hidden");
         weatherPanel.classList.add("hidden");
         grafanaPanel.classList.add("hidden");
         // Abrimos estadísticas
         statsPanel.classList.remove("hidden");
     } else {
         statsPanel.classList.add("hidden");
+    }
+}
+
+function toggleBatch() {
+    const batchPanel = document.getElementById("batch-panel");
+    const weatherPanel = document.getElementById("weather-panel");
+    const grafanaPanel = document.getElementById("grafana-panel");
+    const statsPanel = document.getElementById("stats-panel");
+
+    if (batchPanel.classList.contains("hidden")) {
+        // Cerramos los otros dos
+        weatherPanel.classList.add("hidden");
+        grafanaPanel.classList.add("hidden");
+        statsPanel.classList.add("hidden");
+        // Abrimos estadísticas
+        batchPanel.classList.remove("hidden");
+    } else {
+        batchPanel.classList.add("hidden");
     }
 }
 

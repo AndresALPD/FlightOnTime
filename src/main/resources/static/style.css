@@ -415,11 +415,7 @@ input[readonly] {
     bottom: 30px; /* Alineado con la base del botón de clima */
 }
 
-.batch-panel.hidden {
-    display: none;
-    opacity: 0;
-    transform: translateY(20px);
-}
+
 
 .batch-header {
     background: var(--primary-color);
