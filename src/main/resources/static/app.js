@@ -394,7 +394,7 @@ async function procesarBatch() {
 
     try {
         // Ajusta la URL si tu API corre en otro puerto o IP
-        const response = await fetch("http://56.125.109.176:5000/predict-batch", {
+        const response = await fetch(`${CONFIG.API_PYTHON_URL}/predict-batch`, {
             method: "POST",
             body: formData
         });
@@ -412,6 +412,10 @@ async function procesarBatch() {
         status.innerHTML = "<span style='color: red;'>❌ Error: " + error.message + "</span>";
     }
 }
+function toggleBatch() {
+    document.getElementById("batch-panel").classList.toggle("hidden");
+}
+
 
 // Utilidad para convertir el JSON de la API a CSV descargable
 function jsonToCsv(items) {
