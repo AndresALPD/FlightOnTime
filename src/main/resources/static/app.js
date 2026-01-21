@@ -1,3 +1,5 @@
+let historialPredicciones = [];
+
 function predecir() {
 
     const btn = document.getElementById("btnPredict");
@@ -144,6 +146,9 @@ function mostrarResultado(data) {
 
     // Aseguramos que se vea
     resultadoDiv.classList.add("result-visible");
+
+    //Llamar al historial cuando la predicción es correcta
+    agregarAHistorial(data);
 }
 
 function mostrarError(error) {
@@ -373,3 +378,58 @@ function mostrarStats(data) {
     `;
 }
 
+function agregarAHistorial(data) {
+    // unshift mete la predicción más reciente arriba
+    historialPredicciones.unshift({
+        fecha: new Date(),
+        aerolinea: data.aerolinea_nombre,
+        origen: data.origen,
+        destino: data.destino,
+        riesgo: data.nivel_riesgo,
+        probabilidad: data.probabilidad_retraso
+    });
+
+    renderHistorial();
+}
+
+function renderHistorial() {
+    const panel = document.getElementById("historial");
+    const lista = document.getElementById("historial-lista");
+
+    lista.innerHTML = "";
+
+    historialPredicciones.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "history-card";
+
+        let color;
+        if (item.riesgo === "ALTO") color = "var(--danger)";
+        else if (item.riesgo === "MEDIO") color = "#f9a825";
+        else color = "#2e7d32";
+
+        div.innerHTML = `
+            <div class="history-header">
+                <span class="history-airline">
+                    <i class="fa-solid fa-plane"></i> ${item.aerolinea}
+                </span>
+                <span class="history-badge" style="background:${color}">
+                    ${item.riesgo}
+                </span>
+            </div>
+
+            <div class="history-body">
+                <div>
+                    ✈️ ${item.origen} → ${item.destino}
+                </div>
+                <div class="history-prob">
+                    📊 ${item.probabilidad}% retraso
+                </div>
+            </div>
+        `;
+
+        lista.appendChild(div);
+    });
+
+    // Mostrar panel historial si estaba oculto
+    panel.classList.remove("hidden");
+}
