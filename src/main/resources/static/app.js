@@ -235,12 +235,19 @@ function toggleBatch() {
     const grafanaPanel = document.getElementById("grafana-panel");
     const statsPanel = document.getElementById("stats-panel");
 
+
+
+    // Verificamos que el panel principal exista
+    if (!batchPanel) return;
+
     if (batchPanel.classList.contains("hidden")) {
-        // Cerramos los otros dos
-        weatherPanel.classList.add("hidden");
-        grafanaPanel.classList.add("hidden");
-        statsPanel.classList.add("hidden");
-        // Abrimos estadísticas
+        // Cerramos los otros usando una validación simple (if p)
+        // para que no de error si el ID no existe en el HTML
+        [weatherPanel, grafanaPanel, statsPanel].forEach(p => {
+            if (p) p.classList.add("hidden");
+        });
+
+        // Abrimos Batch
         batchPanel.classList.remove("hidden");
     } else {
         batchPanel.classList.add("hidden");
@@ -396,10 +403,6 @@ function mostrarStats(data) {
         </div>
     `;
 }
-// Alternar visibilidad del panel
-function toggleBatch() {
-    document.getElementById("batch-panel").classList.toggle("hidden");
-}
 
 async function procesarBatch() {
     const fileInput = document.getElementById('batchFile');
@@ -435,9 +438,6 @@ async function procesarBatch() {
     } catch (error) {
         status.innerHTML = "<span style='color: red;'>❌ Error: " + error.message + "</span>";
     }
-}
-function toggleBatch() {
-    document.getElementById("batch-panel").classList.toggle("hidden");
 }
 
 

@@ -417,24 +417,6 @@ input[readonly] {
 
 
 
-.batch-header {
-    background: var(--primary-color);
-    color: white;
-    padding: 15px 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.batch-header h3 {
-    font-size: 1rem;
-    margin: 0;
-    flex-grow: 1;
-}
-
-
-
-
 .close-panel {
     background: transparent;
     border: none;
