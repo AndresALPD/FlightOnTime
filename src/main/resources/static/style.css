@@ -17,13 +17,49 @@
 
 body {
     font-family: 'Poppins', sans-serif;
-    background: var(--bg-gradient);
+    /* Eliminamos el background: var(--bg-gradient) anterior */
+    background-color: #0d47a1; /* Color de base sólido por si la imagen falla */
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     color: var(--text-dark);
     padding: 20px;
+    position: relative; /* Necesario para posicionar el fondo */
+    overflow-x: hidden;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Reemplaza esta URL por la ruta de tu imagen de aeropuerto local o web */
+    background-image: url('https://images.unsplash.com/photo-1530521954074-e64f6810b32d?q=80&w=2070&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    /* CONTROL DE ALFA (Opacidad) */
+    /* 0.1 es muy tenue, 0.3 es más visible */
+    opacity: 0.2;
+
+    z-index: -1; /* Se coloca detrás de todo el contenido */
+}
+
+.glass-card {
+    width: 100%;
+    max-width: 850px;
+    /* Bajamos la opacidad de 0.95 a 0.85 para un efecto más moderno */
+    background: rgba(255, 255, 255, 0.85);
+    padding: 3rem;
+    border-radius: var(--radius);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(12px); /* Aumentamos un poco el desenfoque */
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    z-index: 1; /* Asegura estar sobre el fondo */
 }
 
 .main-wrapper {
@@ -352,6 +388,35 @@ input[readonly] {
     flex-grow: 1;
 }
 
+
+
+    /* --- Panel de Procesamiento batch --- */
+
+.batch-body {
+    padding: 20px;
+}
+
+.batch-panel {
+    position: fixed;
+    /* Movemos el panel a la izquierda para que no choque con los botones */
+    right: 110px;
+    width: 320px;
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 16px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    z-index: 999;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: all 0.4s ease;
+}
+
+/* Posición específica para el panel de Clima */
+#batch-panel {
+    bottom: 30px; /* Alineado con la base del botón de clima */
+}
+
+
+
 .close-panel {
     background: transparent;
     border: none;
@@ -612,4 +677,85 @@ input[readonly] {
     padding: 15px;
     border-radius: 12px;
     margin-top: 15px;
+}
+
+#taxi_out,
+    /* Oculta el label que apunta a ese ID */
+label[for="taxi_out"] {
+    display: none;
+}
+
+/* --- Botón Batch (Posición 4) --- */
+#batch-button {
+    position: fixed;
+    /* 30 (clima) + 80 (grafana) + 80 (stats) + 80 = 270px */
+    bottom: 270px;
+    right: 30px;
+    background: #009688; /* Teal */
+    color: white;
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    font-size: 26px; /* Un pelín más grande para este icono */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(0, 150, 136, 0.4);
+    z-index: 1000;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#batch-button:hover {
+    transform: scale(1.1) rotate(10deg);
+    background: #00796b;
+}
+
+/* --- Panel de Batch --- */
+#batch-panel {
+    bottom: 270px; /* Alineado con su burbuja */
+    right: 110px;  /* Izquierda de la columna */
+}
+
+/* Input de archivo mejorado */
+.batch-file-input {
+    width: 100%;
+    padding: 15px;
+    border: 2px dashed #009688; /* Borde discontinuo estilo "Dropzone" */
+    border-radius: 8px;
+    margin-top: 5px;
+    background: #e0f2f1;
+    color: #00695c;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.batch-file-input:hover {
+    background: #b2dfdb;
+}
+
+/* Botón de acción específico */
+.btn-batch-action {
+    width: 100%;
+    margin-top: 15px;
+    padding: 12px;
+    background: #e0f2f1;
+    color: #00796b;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-batch-action:hover {
+    background: #009688;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 150, 136, 0.2);
 }

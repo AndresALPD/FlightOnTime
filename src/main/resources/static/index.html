@@ -20,7 +20,7 @@
                     <i class="fa-solid fa-plane-departure"></i>
                 </div>
             </a>
-            <h2>FlightOnTime</h2>
+            <h2>Flight On Time</h2>
             <p>Predicción inteligente de retrasos de vuelo</p>
         </header>
 
@@ -56,7 +56,7 @@
             </div>
 
             <div class="input-group technical">
-                <label for="distancia_km">Distancia (km)</label>
+                <label for="distancia_km">Millas de vuelo</label>
                 <input type="number" id="distancia_km" readonly placeholder="Calc...">
             </div>
 
@@ -153,6 +153,37 @@
     </div>
 </div>
 
+
+<div id="batch-button" onclick="toggleBatch()" title="Predicción Masiva (CSV)">
+    <i class="fa-solid fa-file-csv"></i>
+</div>
+
+<div id="batch-panel" class="weather-panel hidden">
+    <div class="weather-header" style="background: #009688;">
+        <i class="fa-solid fa-file-export"></i>
+        <h3>Carga Masiva</h3>
+        <button class="close-panel" onclick="toggleBatch()">&times;</button>
+    </div>
+
+    <div class="weather-body">
+        <p style="font-size: 0.85rem; color: #555; margin-bottom: 15px; line-height: 1.4;">
+            Sube tu archivo <b>.csv</b>. Columnas requeridas: <br>
+            <i class="fa-solid fa-circle-info" style="color:#009688; margin-top:5px;"></i> aerolinea, hora_salida, dia_semana, distancia_km...
+        </p>
+
+        <div class="input-wrapper">
+            <input type="file" id="batchFile" accept=".csv" class="batch-file-input">
+        </div>
+
+        <button onclick="procesarBatch()" class="btn-batch-action">
+            Procesar CSV <i class="fa-solid fa-cloud-arrow-up"></i>
+        </button>
+
+        <div id="batch_status" style="margin-top: 15px; font-size: 0.9rem; text-align: center; min-height: 20px;"></div>
+    </div>
+</div>
+
+<script src="config.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
@@ -161,7 +192,7 @@
     document.addEventListener("DOMContentLoaded", cargarAerolineas);
 
     async function cargarAerolineas() {
-        const res = await fetch("http://localhost:8080/api/catalogs/airlines");
+        const res = await fetch("/api/catalogs/airlines");
         const data = await res.json();
 
         const select = document.getElementById("aerolinea");
@@ -170,7 +201,7 @@
         data.forEach(a => {
             select.innerHTML += `
             <option value="${a.code}">
-                ${a.code} - ${a.name}
+                <!--${a.code} - --> ${a.name}
             </option>
         `;
         });
@@ -185,8 +216,7 @@
         const airline = this.value;
         if (!airline) return;
 
-        const res = await fetch(
-            `http://localhost:8080/api/catalogs/origins?airline=${airline}`
+        const res = await fetch(`/api/catalogs/origins?airline=${airline}`
         );
         const data = await res.json();
 
@@ -196,7 +226,7 @@
         data.forEach(o => {
             select.innerHTML += `
             <option value="${o.code}">
-                ${o.code} - ${o.city}
+                <!--${o.code} - --> ${o.city}
             </option>
         `;
         });
@@ -218,8 +248,7 @@
 
         if (!origin) return;
 
-        const res = await fetch(
-            `http://localhost:8080/api/catalogs/destinations?airline=${airline}&origin=${origin}`
+        const res = await fetch(`/api/catalogs/destinations?airline=${airline}&origin=${origin}`
         );
         const data = await res.json();
 
@@ -229,7 +258,7 @@
         data.forEach(d => {
             select.innerHTML += `
             <option value="${d.code}">
-                ${d.code} - ${d.city}
+                <!-- ${d.code} - --> ${d.city}
             </option>
         `;
         });
@@ -250,8 +279,7 @@
 
         if (!dest) return;
 
-        const res = await fetch(
-            `http://localhost:8080/api/catalogs/distance?airline=${airline}&origin=${origin}&dest=${dest}`
+        const res = await fetch(`/api/catalogs/distance?airline=${airline}&origin=${origin}&dest=${dest}`
         );
 
         const data = await res.json();

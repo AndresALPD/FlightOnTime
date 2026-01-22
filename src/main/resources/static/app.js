@@ -36,7 +36,7 @@ function predecir() {
         document.querySelectorAll(".error").forEach(e => e.innerText = "");
     }
 
-    fetch("http://localhost:8080/api/flight-delay/predict", {
+    fetch("/api/flight-delay/predict", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -176,12 +176,14 @@ function mostrarError(error) {
 }
 
 function toggleWeather() {
+    const batchPanel = document.getElementById("batch-panel");
     const weatherPanel = document.getElementById("weather-panel");
     const grafanaPanel = document.getElementById("grafana-panel");
     const statsPanel = document.getElementById("stats-panel");
 
     if (weatherPanel.classList.contains("hidden")) {
         // Cerramos los otros dos
+        batchPanel.classList.add("hidden");
         grafanaPanel.classList.add("hidden");
         statsPanel.classList.add("hidden");
         // Abrimos clima
@@ -192,12 +194,14 @@ function toggleWeather() {
 }
 
 function toggleGrafana() {
+    const batchPanel = document.getElementById("batch-panel");
     const weatherPanel = document.getElementById("weather-panel");
     const grafanaPanel = document.getElementById("grafana-panel");
     const statsPanel = document.getElementById("stats-panel");
 
     if (grafanaPanel.classList.contains("hidden")) {
         // Cerramos los otros dos
+        batchPanel.classList.add("hidden");
         weatherPanel.classList.add("hidden");
         statsPanel.classList.add("hidden");
         // Abrimos grafana
@@ -208,18 +212,45 @@ function toggleGrafana() {
 }
 
 function toggleStats() {
+    const batchPanel = document.getElementById("batch-panel");
     const weatherPanel = document.getElementById("weather-panel");
     const grafanaPanel = document.getElementById("grafana-panel");
     const statsPanel = document.getElementById("stats-panel");
 
     if (statsPanel.classList.contains("hidden")) {
         // Cerramos los otros dos
+        batchPanel.classList.add("hidden");
         weatherPanel.classList.add("hidden");
         grafanaPanel.classList.add("hidden");
         // Abrimos estadísticas
         statsPanel.classList.remove("hidden");
     } else {
         statsPanel.classList.add("hidden");
+    }
+}
+
+function toggleBatch() {
+    const batchPanel = document.getElementById("batch-panel");
+    const weatherPanel = document.getElementById("weather-panel");
+    const grafanaPanel = document.getElementById("grafana-panel");
+    const statsPanel = document.getElementById("stats-panel");
+
+
+
+    // Verificamos que el panel principal exista
+    if (!batchPanel) return;
+
+    if (batchPanel.classList.contains("hidden")) {
+        // Cerramos los otros usando una validación simple (if p)
+        // para que no de error si el ID no existe en el HTML
+        [weatherPanel, grafanaPanel, statsPanel].forEach(p => {
+            if (p) p.classList.add("hidden");
+        });
+
+        // Abrimos Batch
+        batchPanel.classList.remove("hidden");
+    } else {
+        batchPanel.classList.add("hidden");
     }
 }
 
@@ -239,7 +270,7 @@ function consultarClima() {
         </div>
     `;
 
-    fetch(`http://localhost:8080/api/weather/by-coordinates?lat=${lat}&lon=${lon}`)
+    fetch(`/api/weather/by-coordinates?lat=${lat}&lon=${lon}`)
         .then(res => res.json())
         .then(data => {
             // Inyectamos una mini tarjeta de datos con iconos de FontAwesome
@@ -289,7 +320,7 @@ inputCity.addEventListener("input", () => {
     }
 
     debounceTimer = setTimeout(() => {
-        fetch(`http://localhost:8080/api/weather/cities?q=${query}`)
+        fetch(`/api/weather/cities?q=${query}`)
             .then(res => res.json())
             .then(data => {
                 suggestions.innerHTML = "";
@@ -316,7 +347,7 @@ function consultarStats() {
 
     resultadoDiv.innerHTML = "Cargando estadísticas... ⏳";
 
-    let url = "http://localhost:8080/api/flight-delay/stats";
+    let url = "/api/flight-delay/stats";
     if (fecha) {
         url += `?fecha=${fecha}`;
     }
@@ -371,5 +402,63 @@ function mostrarStats(data) {
             </p>
         </div>
     `;
+}
+
+async function procesarBatch() {
+    const fileInput = document.getElementById('batchFile');
+    const status = document.getElementById('batch_status');
+
+    if (fileInput.files.length === 0) {
+        status.innerHTML = "<span style='color: red; font-weight:bold; '>⚠️ Selecciona un archivo CSV</span>";
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    status.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Procesando...";
+    status.style.color = "#2196F3";
+
+    try {
+        // Ajusta la URL si tu API corre en otro puerto o IP
+        const response = await fetch(`${CONFIG.API_PYTHON_URL}/predict-batch`, {
+            method: "POST",
+            body: formData
+        });
+
+        if (!response.ok) throw new Error("Error en el servidor");
+
+        const data = await response.json();
+
+        // Convertimos los resultados a CSV y descargamos
+        const csvContent = jsonToCsv(data);
+        descargarArchivo(csvContent, "resultados_vuelos.csv");
+
+        status.innerHTML = "<span style='color: #2e7d32; font-weight:bold;'>✅ ¡Éxito! Archivo descargado</span>";
+    } catch (error) {
+        status.innerHTML = "<span style='color: red; font-weight:bold; '>❌ Error: " + error.message + "</span>";
+    }
+}
+
+
+// Utilidad para convertir el JSON de la API a CSV descargable
+function jsonToCsv(items) {
+    const header = Object.keys(items[0]);
+    const csv = [
+        header.join(','),
+        ...items.map(row => header.map(fieldName => JSON.stringify(row[fieldName])).join(','))
+    ].join('\r\n');
+    return csv;
+}
+
+function descargarArchivo(content, fileName) {
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
