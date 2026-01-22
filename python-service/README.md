@@ -14,6 +14,7 @@ python-service/
 ├── app/
 │ ├── model/ # Aquí va el archivo .pkl del modelo
 │ ├── data/ # Aquí va el archivo CSV usado por el modelo
+│ ├── batch.py
 │ └── main.py
 ├── venv/ # Entorno virtual (NO se sube al repo)
 ├── requirements.txt # Dependencias del proyecto
@@ -119,8 +120,6 @@ Si todo está correcto, verás algo similar a:
 ```
 🚀 Iniciando FlightOnTime API
 
-📦 PKL contiene un diccionario
-
 🧠 Modelo cargado: Pipeline
 
 ✈️ Aerolíneas válidas: 18
@@ -179,17 +178,14 @@ Seleccionamos raw y copiamos el siguiente json:
 ## 📤 Respuesta esperada
 ```
 {
-    "airline_code": "DL",
-    "delay_prediction": 1,
-    "will_be_delayed": true
+    "aerolinea_codigo": "DL",
+    "aerolinea_nombre": "Delta Air Lines Inc.",
+    "retrasado": "SI",
+    "probabilidad_retraso": 63.08,
+    "nivel_riesgo": "MEDIO",
+    "mensaje": "Probabilidad de retraso medio"
 }
 ```
-
-### 🧠 Interpretación del resultado
-
-- `delay_prediction = 0` → ✨ **El vuelo NO se retrasa**
-- `delay_prediction = 1` → ⚠️ **El vuelo SÍ se retrasa**
-
 ---
 
 ## ⚠️ Notas importantes
@@ -202,4 +198,4 @@ Seleccionamos raw y copiamos el siguiente json:
   - `joblib`
 - 🔒 Las versiones de las dependencias están **fijadas en `requirements.txt`** para evitar problemas de compatibilidad
 
-----
+---

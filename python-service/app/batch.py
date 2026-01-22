@@ -1,6 +1,6 @@
 import requests
 import json
-import pandas as pd # Necesitarás instalarlo: pip install pandas
+import pandas as pd
 
 
 # Configuración

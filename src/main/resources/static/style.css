@@ -691,12 +691,12 @@ label[for="taxi_out"] {
     /* 30 (clima) + 80 (grafana) + 80 (stats) + 80 = 270px */
     bottom: 270px;
     right: 30px;
-    background: #009688; /* Color verde azulado elegante */
+    background: #009688; /* Teal */
     color: white;
     width: 65px;
     height: 65px;
     border-radius: 50%;
-    font-size: 24px;
+    font-size: 26px; /* Un pelín más grande para este icono */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -714,22 +714,28 @@ label[for="taxi_out"] {
 /* --- Panel de Batch --- */
 #batch-panel {
     bottom: 270px; /* Alineado con su burbuja */
-    right: 110px;
+    right: 110px;  /* Izquierda de la columna */
 }
 
-/* Estilo para el input de archivo dentro del panel */
+/* Input de archivo mejorado */
 .batch-file-input {
     width: 100%;
-    padding: 10px;
-    border: 2px dashed #009688; /* Estilo dashed para indicar carga */
+    padding: 15px;
+    border: 2px dashed #009688; /* Borde discontinuo estilo "Dropzone" */
     border-radius: 8px;
     margin-top: 5px;
-    background: #f0fdfa;
+    background: #e0f2f1;
+    color: #00695c;
     font-family: inherit;
     cursor: pointer;
+    transition: background 0.3s;
 }
 
-/* Botón del panel Batch */
+.batch-file-input:hover {
+    background: #b2dfdb;
+}
+
+/* Botón de acción específico */
 .btn-batch-action {
     width: 100%;
     margin-top: 15px;

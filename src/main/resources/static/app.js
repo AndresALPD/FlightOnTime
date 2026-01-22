@@ -409,7 +409,7 @@ async function procesarBatch() {
     const status = document.getElementById('batch_status');
 
     if (fileInput.files.length === 0) {
-        status.innerHTML = "<span style='color: red;'>⚠️ Selecciona un archivo CSV</span>";
+        status.innerHTML = "<span style='color: red; font-weight:bold; '>⚠️ Selecciona un archivo CSV</span>";
         return;
     }
 
@@ -434,9 +434,9 @@ async function procesarBatch() {
         const csvContent = jsonToCsv(data);
         descargarArchivo(csvContent, "resultados_vuelos.csv");
 
-        status.innerHTML = "<span style='color: green;'>✅ ¡Éxito! Archivo descargado</span>";
+        status.innerHTML = "<span style='color: #2e7d32; font-weight:bold;'>✅ ¡Éxito! Archivo descargado</span>";
     } catch (error) {
-        status.innerHTML = "<span style='color: red;'>❌ Error: " + error.message + "</span>";
+        status.innerHTML = "<span style='color: red; font-weight:bold; '>❌ Error: " + error.message + "</span>";
     }
 }
 

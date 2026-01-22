@@ -159,26 +159,27 @@
 </div>
 
 <div id="batch-panel" class="weather-panel hidden">
-    <div class="weather-header">
-        <i class="fa-solid fa-file-csv"></i>
-        <h3>Procesamiento Batch</h3>
+    <div class="weather-header" style="background: #009688;">
+        <i class="fa-solid fa-file-export"></i>
+        <h3>Carga Masiva</h3>
         <button class="close-panel" onclick="toggleBatch()">&times;</button>
     </div>
 
     <div class="weather-body">
-        <p style="font-size: 0.85rem; color: #555; margin-bottom: 15px;">
-            Sube un archivo .csv con las columnas: <b>aerolinea, hora_salida, dia_semana, distancia_km, taxi_out, es_finde</b>.
+        <p style="font-size: 0.85rem; color: #555; margin-bottom: 15px; line-height: 1.4;">
+            Sube tu archivo <b>.csv</b>. Columnas requeridas: <br>
+            <i class="fa-solid fa-circle-info" style="color:#009688; margin-top:5px;"></i> aerolinea, hora_salida, dia_semana, distancia_km...
         </p>
 
         <div class="input-wrapper">
-            <input type="file" id="batchFile" accept=".csv" class="stats-input" style="padding: 10px;">
+            <input type="file" id="batchFile" accept=".csv" class="batch-file-input">
         </div>
 
-        <button onclick="procesarBatch()" class="btn-predict" style="margin-top: 10px; width: 100%;">
-            Procesar CSV <i class="fa-solid fa-upload"></i>
+        <button onclick="procesarBatch()" class="btn-batch-action">
+            Procesar CSV <i class="fa-solid fa-cloud-arrow-up"></i>
         </button>
 
-        <div id="batch_status" style="margin-top: 15px; font-size: 0.9rem;"></div>
+        <div id="batch_status" style="margin-top: 15px; font-size: 0.9rem; text-align: center; min-height: 20px;"></div>
     </div>
 </div>
 

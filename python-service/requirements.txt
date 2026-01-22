@@ -7,3 +7,5 @@ joblib==1.5.3
 
 pandas==2.2.2
 pydantic==2.5.0
+
+python-multipart
