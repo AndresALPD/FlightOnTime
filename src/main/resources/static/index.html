@@ -11,69 +11,72 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="master-container>
+    <div class="main-wrapper">
+        <div class="glass-card">
+            <header>
+                <a href="index.html" class="header-link">
+                    <div class="icon-header">
+                        <i class="fa-solid fa-plane-departure"></i>
+                    </div>
+                </a>
+                <h2>Flight On Time</h2>
+                <p>Predicción inteligente de retrasos de vuelo</p>
+            </header>
 
-<div class="main-wrapper">
-    <div class="glass-card">
-        <header>
-            <a href="index.html" class="header-link">
-                <div class="icon-header">
-                    <i class="fa-solid fa-plane-departure"></i>
+            <div class="form-grid">
+                <div class="input-group full-width">
+                    <label for="aerolinea"><i class="fa-solid fa-building"></i> Aerolínea</label>
+                    <select id="aerolinea"></select>
+                    <small class="error" id="aerolineaError"></small>
                 </div>
-            </a>
-            <h2>Flight On Time</h2>
-            <p>Predicción inteligente de retrasos de vuelo</p>
-        </header>
 
-        <div class="form-grid">
-            <div class="input-group full-width">
-                <label for="aerolinea"><i class="fa-solid fa-building"></i> Aerolínea</label>
-                <select id="aerolinea"></select>
-                <small class="error" id="aerolineaError"></small>
+                <div class="input-group">
+                    <label for="origen"><i class="fa-solid fa-map-pin"></i> Origen</label>
+                    <select id="origen"></select>
+                    <small class="error" id="error-origen"></small>
+                </div>
+
+                <div class="input-group">
+                    <label for="destino"><i class="fa-solid fa-location-arrow"></i> Destino</label>
+                    <select id="destino"></select>
+                    <small class="error" id="error-destino"></small>
+                </div>
+
+                <div class="input-group">
+                    <label for="fecha_salida"><i class="fa-regular fa-calendar"></i> Fecha</label>
+                    <input type="date" id="fecha_salida">
+                    <small class="error" id="error-fecha_salida"></small>
+                </div>
+
+                <div class="input-group">
+                    <label for="hora_salida"><i class="fa-regular fa-clock"></i> Hora (0-23h)</label>
+                    <input type="number" id="hora_salida" min="0" max="23" placeholder="Ej: 14">
+                    <small class="error" id="error-hora_salida"></small>
+                </div>
+
+                <div class="input-group technical">
+                    <label for="distancia_km">Millas de vuelo</label>
+                    <input type="number" id="distancia_km" readonly placeholder="Calc...">
+                </div>
+
+                <div class="input-group technical">
+                    <label for="taxi_out">Taxi Out (min)</label>
+                    <input type="number" id="taxi_out" readonly placeholder="Calc...">
+                </div>
             </div>
 
-            <div class="input-group">
-                <label for="origen"><i class="fa-solid fa-map-pin"></i> Origen</label>
-                <select id="origen"></select>
-                <small class="error" id="error-origen"></small>
-            </div>
+            <button id="btnPredict" onclick="predecir()" class="btn-predict">
+                Analizar Vuelo <i class="fa-solid fa-bolt"></i>
+            </button>
 
-            <div class="input-group">
-                <label for="destino"><i class="fa-solid fa-location-arrow"></i> Destino</label>
-                <select id="destino"></select>
-                <small class="error" id="error-destino"></small>
-            </div>
-
-            <div class="input-group">
-                <label for="fecha_salida"><i class="fa-regular fa-calendar"></i> Fecha</label>
-                <input type="date" id="fecha_salida">
-                <small class="error" id="error-fecha_salida"></small>
-            </div>
-
-            <div class="input-group">
-                <label for="hora_salida"><i class="fa-regular fa-clock"></i> Hora (0-23h)</label>
-                <input type="number" id="hora_salida" min="0" max="23" placeholder="Ej: 14">
-                <small class="error" id="error-hora_salida"></small>
-            </div>
-
-            <div class="input-group technical">
-                <label for="distancia_km">Millas de vuelo</label>
-                <input type="number" id="distancia_km" readonly placeholder="Calc...">
-            </div>
-
-            <div class="input-group technical">
-                <label for="taxi_out">Taxi Out (min)</label>
-                <input type="number" id="taxi_out" readonly placeholder="Calc...">
-            </div>
+            <div id="resultado" class="result-container"></div>
         </div>
-
-        <button id="btnPredict" onclick="predecir()" class="btn-predict">
-            Analizar Vuelo <i class="fa-solid fa-bolt"></i>
-        </button>
-
-        <div id="resultado" class="result-container"></div>
+        <footer class="main-footer">
+            <span>&copy; 2026 - H12-25-L-Equipo 24</span>
+        </footer>
     </div>
 </div>
-
 <div id="stats-button" class="floating-bubble" onclick="toggleStats()" title="Estadísticas Diarias">
     <i class="fa-solid fa-chart-bar"></i>
 </div>
@@ -184,8 +187,10 @@
     </div>
 </div>
 
+
 <script src="config.js"></script>
 <script src="app.js"></script>
+
 </body>
 </html>
 

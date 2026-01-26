@@ -20,13 +20,14 @@ body {
     /* Eliminamos el background: var(--bg-gradient) anterior */
     background-color: #0d47a1; /* Color de base sólido por si la imagen falla */
     min-height: 100vh;
-    display: flex;
+    display: flex; /* flex; */
     justify-content: center;
     align-items: center;
     color: var(--text-dark);
     padding: 20px;
     position: relative; /* Necesario para posicionar el fondo */
     overflow-x: hidden;
+
 }
 
 body::before {
@@ -49,18 +50,6 @@ body::before {
     z-index: -1; /* Se coloca detrás de todo el contenido */
 }
 
-.glass-card {
-    width: 100%;
-    max-width: 850px;
-    /* Bajamos la opacidad de 0.95 a 0.85 para un efecto más moderno */
-    background: rgba(255, 255, 255, 0.85);
-    padding: 3rem;
-    border-radius: var(--radius);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(12px); /* Aumentamos un poco el desenfoque */
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    z-index: 1; /* Asegura estar sobre el fondo */
-}
 
 .main-wrapper {
     width: 100%;
@@ -71,9 +60,10 @@ body::before {
 
 .glass-card {
     width: 100%;
+    min-width: 850px;
     max-width: 850px;
     background: rgba(255, 255, 255, 0.95);
-    padding: 3rem;
+    padding: 1.5rem 3rem;
     border-radius: var(--radius);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(10px);
@@ -82,20 +72,20 @@ body::before {
 
 header {
     text-align: center;
-    margin-bottom: 2.5rem;
+    margin-bottom: 1.5rem;
 }
 
 .icon-header {
     background: var(--primary-color);
     color: var(--white);
-    width: 64px;
-    height: 64px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 15px;
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     box-shadow: 0 4px 10px rgba(13, 71, 161, 0.3);
 }
 
@@ -103,6 +93,7 @@ h2 {
     color: var(--primary-color);
     font-weight: 600;
     letter-spacing: -0.5px;
+    font-size: 1.5rem;
 }
 
 header p {
@@ -112,9 +103,11 @@ header p {
 
 .form-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    /*grid-template-columns: repeat(2, 1fr);*/
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px;
     align-items: start;
+    width: 100%;
 }
 
 .full-width {
@@ -147,7 +140,7 @@ input, select {
     width: 100%;
     max-width: 100%;
 
-    padding: 14px;
+    padding: 10px 14px;
     border: 2px solid #e0e0e0;
     border-radius: 10px;
     font-family: inherit;
@@ -160,6 +153,8 @@ input, select {
 }
 
 select {
+    width: 100%;
+    max-width: 100%;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2342a5f5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 14px center;
@@ -196,8 +191,8 @@ input[readonly] {
 /* Botón */
 .btn-predict {
     width: 100%;
-    margin-top: 30px;
-    padding: 16px;
+    margin-top: 20px;
+    padding: 12px;
     background: var(--primary-color);
     color: var(--white);
     border: none;
@@ -758,4 +753,49 @@ label[for="taxi_out"] {
     color: white;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 150, 136, 0.2);
+}
+
+
+/* fotter */
+/* 3. El Footer ahora es un bloque normal */
+.main-footer {
+    width: 100%;
+    text-align: center;
+    margin-top: 40px; /* Espacio entre la tarjeta y el texto */
+    padding-bottom: 20px;
+
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.85rem;
+    font-family: 'Poppins', sans-serif;
+    text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.main-footer span {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 8px 20px;
+    border-radius: 30px;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: inline-block;
+}
+/* 2. Contenedor Maestro */
+.master-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;    /* Centra la glass-card y el footer horizontalmente */
+    width: 100%;
+    max-width: 1200px;      /* Opcional: para que en monitores ultra-anchos no se pierda el foco */
+    padding: 40px 20px;     /* Espacio de respiración arriba y abajo */
+}
+
+.form-grid {
+    display: grid;
+    /* Usar 1fr 1fr a veces permite flexibilidad. minmax(0, 1fr) es más estable */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    width: 100%;
+}
+
+.full-width {
+    grid-column: 1 / -1; /* Asegura que la aerolínea siempre ocupe todo el ancho */
 }
