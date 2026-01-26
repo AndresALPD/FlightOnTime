@@ -462,3 +462,30 @@ function descargarArchivo(content, fileName) {
     document.body.removeChild(link);
 }
 
+
+// Lógica para el botón dinámico de Grafana (Producción vs Espejo)
+document.addEventListener("DOMContentLoaded", function() {
+    const hostActual = window.location.hostname;
+    const botonGrafana = document.getElementById('link-grafana');
+
+    // CONFIGURACIÓN DE IPs
+    const IP_PRODUCCION = "15.228.189.187";
+
+    // URLs de Grafana (Servidores externos)
+    const urlGrafanaProduccion = "http://18.231.95.162:3000/public-dashboards/2a2b1a40bad94c39a1b7eb6376e4a8f6";
+    const urlGrafanaEspejo = "http://56.125.192.200:3000/public-dashboards/2a2b1a40bad94c39a1b7eb6376e4a8f6";
+
+    if (botonGrafana) {
+        // Lógica: Si estoy en la IP de producción, uso Grafana de producción.
+        // En cualquier otro caso (como la nueva IP del espejo 18.231.3.175), uso Grafana espejo.
+        if (hostActual === IP_PRODUCCION) {
+            botonGrafana.href = urlGrafanaProduccion;
+            console.log("Servidor: Producción. Cargando Grafana Producción.");
+        } else {
+            botonGrafana.href = urlGrafanaEspejo;
+            console.log("Servidor: Espejo/Local. Cargando Grafana Espejo.");
+        }
+    } else {
+        console.error("No se encontró el botón con ID 'link-grafana'");
+    }
+});

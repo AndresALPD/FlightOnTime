@@ -19,10 +19,10 @@ public class FlightDelayRequestDto {
     @NotBlank(message = "La aerolínea es obligatoria")
      private String aerolinea;
 
-    @NotNull(message = "El aeropuerto de origen es obligatorio")
+    @NotBlank(message = "El aeropuerto de origen es obligatorio")
     private String origen;
 
-    @NotNull(message = "El aeropuerto de destino es obligatorio")
+    @NotBlank(message = "El aeropuerto de destino es obligatorio")
     private String destino;
 
 

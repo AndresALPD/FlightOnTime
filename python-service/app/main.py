@@ -43,12 +43,23 @@ async def lifespan(app: FastAPI):
         print(f"❌ Error: No se encuentra el CSV en {CSV_PATH}")
         raise RuntimeError("CSV de referencia no encontrado")
 
-    df_ref = pd.read_csv(CSV_PATH, usecols=["AIRLINE_CODE", "AIRLINE"], dtype=str).dropna().drop_duplicates()
+    #df_ref = pd.read_csv(CSV_PATH, usecols=["AIRLINE_CODE", "AIRLINE"], dtype=str).dropna().drop_duplicates()
+    df_ref = pd.read_csv(
+            CSV_PATH,
+            usecols=["AIRLINE_CODE", "AIRLINE"],
+            dtype=str,
+            low_memory=False,
+            nrows=1000
+        ).dropna().drop_duplicates()
+
 
     # Normalización para comparaciones seguras
     AEROLINEAS_VALIDAS = set(df_ref["AIRLINE_CODE"].str.upper().str.strip().unique())
     AIRLINE_MAP = df_ref.sort_values("AIRLINE").to_dict(orient="records")
     AIRLINE_NAME_BY_CODE = {row["AIRLINE_CODE"]: row["AIRLINE"] for row in AIRLINE_MAP}
+
+    # Limpiamos la variable pesada para liberar RAM de inmediato
+    del df_ref
 
     print(f"✈️ {len(AEROLINEAS_VALIDAS)} aerolíneas cargadas correctamente")
     yield
@@ -196,4 +207,4 @@ async def predict_batch(file: UploadFile = File(...)):
 # ========================
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=5000)
+    uvicorn.run(app, host="0.0.0.0", port=5000)

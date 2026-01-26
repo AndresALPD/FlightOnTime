@@ -10,6 +10,7 @@ import com.flightontime.entity.PrediccionEntity;
 import com.flightontime.repository.PrediccionRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,11 +21,16 @@ import org.springframework.web.client.RestTemplate;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
+
+
 @Service
 public class FlightDelayService {
 
     //private static final String PYTHON_API_URL = "http://localhost:5000/predict";
-    private static final String PYTHON_API_URL = "http://127.0.0.1:5000/predict";
+    private static final String urlFinal = "http://127.0.0.1:5000/predict";
+
+    //@Value("${PYTHON_API_URL}")
+    //private String pythonBaseUrl;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -36,6 +42,8 @@ public class FlightDelayService {
     public FlightDelayResponseDto predictDelay(FlightDelayRequestDto requestDto) {
 
         try {
+           // String urlFinal = pythonBaseUrl + "/predict";
+
             // 1️⃣ Calcular día de la semana y si es fin de semana
             DayOfWeek dayOfWeek = requestDto.getFecha_salida().getDayOfWeek();
             int diaSemana = dayOfWeek.getValue(); // 1=Lunes ... 7=Domingo
@@ -58,7 +66,7 @@ public class FlightDelayService {
 
             // 3️⃣ Llamada al microservicio de Python (FastAPI/Flask)
             ResponseEntity<FlightDelayResponseDto> response = restTemplate.postForEntity(
-                    PYTHON_API_URL,
+                    urlFinal,
                     request,
                     FlightDelayResponseDto.class
             );
