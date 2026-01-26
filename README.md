@@ -25,8 +25,8 @@ Los retrasos en los vuelos generan inconvenientes, pérdidas económicas y estr�
 
 El proyecto se encuentra desplegado y accesible públicamente en una instancia EC2 de AWS (Ubuntu):
 
-*   🔗 **Frontend Principal**: [http://56.125.109.176:8080/](http://56.125.109.176:8080/)
-*   🔗 **Acceso Alternativo**: [http://56.125.109.176/](http://56.125.109.176/)
+*   🔗 **Frontend Principal**: [Ver Frontend Principal](http://15.228.189.187:8080/)
+*   🔗 **Acceso Alternativo**: [Ver Acceso Alternativo](http://15.228.189.187/)
 
 > ⚠️ **Nota:** Asegúrese de estar conectado a una red que permita tráfico HTTP a IPs directas.
 
