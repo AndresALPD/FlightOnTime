@@ -799,3 +799,48 @@ label[for="taxi_out"] {
 .full-width {
     grid-column: 1 / -1; /* Asegura que la aerolínea siempre ocupe todo el ancho */
 }
+
+/*----*/
+
+/* Este código solo se ejecuta en pantallas menores a 768px (celulares y tablets) */
+@media (max-width: 768px) {
+    .master-container {
+        padding: 10px; /* Menos espacio en los bordes del celular */
+    }
+
+    .glass-card {
+        width: 95%;      /* La tarjeta ocupa casi todo el ancho */
+        min-width: unset; /* Quitamos el bloqueo de 850px que pusimos para PC */
+        max-width: 100%;
+        padding: 1.5rem;  /* Reducimos el espacio interno para que quepa más texto */
+    }
+
+    .form-grid {
+        /* ¡Aquí está el truco! En móvil, solo 1 columna */
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .icon-header {
+        width: 45px;
+        height: 45px;
+        font-size: 1.2rem;
+    }
+
+    h2 {
+        font-size: 1.3rem; /* Título un poco más pequeño */
+    }
+
+    /* Los botones flotantes de la derecha suelen estorbar en móvil */
+    .floating-controls {
+        right: 10px;
+        bottom: 70px; /* Los subimos para que no tapen el footer */
+        transform: scale(0.8); /* Los hacemos un pelín más pequeños */
+    }
+
+    .main-footer {
+        position: relative; /* En móvil es mejor que esté al final del scroll */
+        bottom: 0;
+        margin-top: 20px;
+    }
+}
