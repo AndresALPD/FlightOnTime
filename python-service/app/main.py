@@ -5,9 +5,17 @@ from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 import joblib
 import os
+from dotenv import load_dotenv
 import io
 from datetime import datetime, date
 from typing import List
+
+import google.generativeai as genai
+load_dotenv()
+
+api_key = os.getenv("GEMINI_API_KEY")
+genai.configure(api_key=api_key)
+model_gemini = genai.GenerativeModel('models/gemini-flash-lite-latest')
 
 # ========================
 # VARIABLES GLOBALES
@@ -109,7 +117,7 @@ def listar_aerolineas():
     return AIRLINE_MAP
 
 @app.post("/predict", response_model=PredictionOutput)
-def predict_delay(request: FlightRequest):
+async def predict_delay(request: FlightRequest):
     cod = request.aerolinea.upper().strip()
 
     if cod not in AEROLINEAS_VALIDAS:
@@ -126,18 +134,31 @@ def predict_delay(request: FlightRequest):
 
     prob = round(float(model.predict_proba(input_df)[0][1]) * 100, 2) if hasattr(model, "predict_proba") else 0.0
     pred = int(model.predict(input_df)[0])
-
     riesgo = "ALTO" if prob >= 70 else ("MEDIO" if prob >= 40 else "BAJO")
+    nombre_aerolinea = AIRLINE_NAME_BY_CODE.get(cod, "Desconocida")
+
+
+    try:
+        prompt = (
+            f"Actúa como un experto en análisis de vuelos. Mi modelo de ML ha predicho que un vuelo de "
+            f"{nombre_aerolinea} tiene una probabilidad de retraso del {prob}% (Riesgo {riesgo}). "
+            f"La hora de salida es {request.hora_salida}:00 y la distancia es {request.distancia_km} km. "
+            f"Da una explicación muy breve (máximo 20 palabras) sobre qué significa esto para el viajero."
+        )
+        response = model_gemini.generate_content(prompt)
+        mensaje_ia = response.text.strip()
+    except Exception as e:
+        print(f"⚠️ Error Gemini: {e}")
+        mensaje_ia = f"Probabilidad de retraso {riesgo.lower()}"
 
     return PredictionOutput(
         aerolinea_codigo=cod,
-        aerolinea_nombre=AIRLINE_NAME_BY_CODE.get(cod, "Desconocida"),
+        aerolinea_nombre=nombre_aerolinea, # Corregido: antes decía areolina
         retrasado="SI" if pred == 1 else "NO",
         probabilidad_retraso=prob,
         nivel_riesgo=riesgo,
-        mensaje=f"Probabilidad de retraso {riesgo.lower()}"
+        mensaje=mensaje_ia
     )
-
 @app.post("/predict-batch", response_model=List[PredictionOutput])
 async def predict_batch(file: UploadFile = File(...)):
     if not file.filename.endswith('.csv'):
