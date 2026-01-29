@@ -83,6 +83,12 @@ Funcionalidad para el análisis masivo de vuelos mediante la carga de archivos.
 *   **Procesamiento**: El sistema procesa el archivo, conecta con el modelo de IA para cada registro y genera los resultados.
 *   **Resultado**: Se devuelve un archivo CSV descargable que incluye las predicciones realizadas para cada vuelo.
 
+### 🧠 IA Generativa (Google Gemini)
+Utilizada para transformar estadísticas de puntualidad y porcentajes de atraso en mensajes personalizados y amigables para el usuario.
+*   **Service**: GeminiService (o el nombre que tenga tu clase de servicio).
+*   **Modelo**: models/gemini-flash-lite-latest.
+*   **Configuración**: google.api.key en archivo .env.
+
 ---
 
 ## 💾 Base de Datos (MySQL)
