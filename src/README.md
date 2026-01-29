@@ -85,7 +85,7 @@ Funcionalidad para el análisis masivo de vuelos mediante la carga de archivos.
 
 ### 🧠 IA Generativa (Google Gemini)
 Utilizada para transformar estadísticas de puntualidad y porcentajes de atraso en mensajes personalizados y amigables para el usuario.
-*   **Service**: GeminiService (o el nombre que tenga tu clase de servicio).
+*   **Service**: GeminiService.
 *   **Modelo**: models/gemini-flash-lite-latest.
 *   **Configuración**: google.api.key en archivo .env.
 
