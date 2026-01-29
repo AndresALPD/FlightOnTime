@@ -59,7 +59,7 @@ El sistema utiliza una arquitectura de microservicios híbrida:
 
 ### 🔌 APIs Externas
 *   **OpenWeatherMap**: Obtención de datos meteorológicos en tiempo real para enriquecer las predicciones.
-*   **Google Generative AI (Gemini)**: Automatización de la comunicación con el usuario, transformando estadísticas de retrasos en mensajes personalizados y empáticos.
+*   **Google Generative AI (Gemini)**: Automatización de la comunicación con el usuario, transformando las predicciones en mensajes personalizados y empáticos.
 ---
 
 ## 🏗️ Arquitectura del Sistema
