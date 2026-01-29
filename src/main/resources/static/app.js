@@ -469,10 +469,11 @@ document.addEventListener("DOMContentLoaded", function() {
     const botonGrafana = document.getElementById('link-grafana');
 
     // CONFIGURACIÓN DE IPs
-    const IP_PRODUCCION = "15.228.189.187";
+    const IP_PRODUCCION = "www.flightontime.cl";
 
     // URLs de Grafana (Servidores externos)
-    const urlGrafanaProduccion = "http://18.231.95.162:3000/public-dashboards/2a2b1a40bad94c39a1b7eb6376e4a8f6";
+    const urlGrafanaProduccion = "http://dashboard.flightontime.cl:3000/public-dashboards/2a2b1a40bad94c39a1b7eb6376e4a8f6";
+    const urlGrafanaProduccionII = "http://18.231.95.162:3000/public-dashboards/2a2b1a40bad94c39a1b7eb6376e4a8f6";
     const urlGrafanaEspejo = "http://56.125.192.200:3000/public-dashboards/2a2b1a40bad94c39a1b7eb6376e4a8f6";
 
     if (botonGrafana) {
