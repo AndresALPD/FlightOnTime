@@ -21,17 +21,6 @@ Los retrasos en los vuelos generan inconvenientes, pérdidas económicas y estr�
 
 ---
 
-## 🌐 Demo en Vivo (AWS)
-
-El proyecto se encuentra desplegado y accesible públicamente en una instancia EC2 de AWS (Ubuntu):
-
-*   🔗 **Frontend Principal**: http://www.flightontime.cl/
-  
-
-> ⚠️ **Nota:** Asegúrese de estar conectado a una red que permita tráfico HTTP a IPs directas.
-
----
-
 ## 🛠️ Stack Tecnológico
 
 El sistema utiliza una arquitectura de microservicios híbrida:
